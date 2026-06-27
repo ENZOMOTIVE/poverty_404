@@ -6,6 +6,7 @@ const DashboardPage = lazy(() => import("../pages/DashboardPage"));
 const OutreachPage = lazy(() => import("../pages/OutreachPage"));
 const ReferralsPage = lazy(() => import("../pages/ReferralsPage"));
 const RiskPage = lazy(() => import("../pages/RiskPage"));
+const SimulationPage = lazy(() => import("../pages/SimulationPage"));
 const QueuePage = lazy(() => import("../pages/QueuePage"));
 const QualityPage = lazy(() => import("../pages/QualityPage"));
 const ScoresPage = lazy(() => import("../pages/ScoresPage"));
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="outreach" element={page(<OutreachPage />)} />
         <Route path="referrals" element={page(<ReferralsPage />)} />
         <Route path="risk" element={page(<RiskPage />)} />
+        <Route path="simulation" element={page(<SimulationPage />)} />
         <Route path="queue" element={page(<QueuePage />)} />
         <Route path="quality" element={page(<QualityPage />)} />
         <Route path="scores" element={page(<ScoresPage />)} />

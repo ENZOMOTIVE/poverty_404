@@ -5,6 +5,7 @@ import {
   Gauge,
   GitPullRequestArrow,
   MapPinned,
+  Play,
   ShieldCheck,
 } from "lucide-react";
 
@@ -28,6 +29,11 @@ export const navigationItems = [
     label: "Risk",
     path: "/risk",
     icon: Gauge,
+  },
+  {
+    label: "Simulation",
+    path: "/simulation",
+    icon: Play,
   },
   {
     label: "Queue",
