@@ -1,11 +1,13 @@
 import { Bell, DatabaseZap, Search } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { navigationItems } from "../../app/navigation";
-import { sourceSummary } from "../../data/mafyData";
+import { useAnalytics } from "../../providers/analyticsContext";
 import { cn, formatNumber, formatPercent } from "../../utils/format";
 import StatusPill from "../ui/StatusPill";
 
 export default function AppShell() {
+  const { summary, backendStatus } = useAnalytics();
+
   return (
     <div className="min-h-screen bg-ink text-ash terminal-bg">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-grid/70 bg-ink/95 px-4 py-5 backdrop-blur lg:block">
@@ -47,21 +49,21 @@ export default function AppShell() {
             <span className="text-xs font-semibold uppercase text-muted">
               Dataset
             </span>
-            <StatusPill status="Live" />
+            <StatusPill status={backendStatus === "live" ? "Live" : "Stable"} />
           </div>
           <p className="mt-3 truncate text-xs text-ash">
-            {sourceSummary.dataset}
+            {summary.dataset}
           </p>
           <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
             <div>
               <p className="text-muted">Rows</p>
-              <p className="mt-1 font-mono text-white">{sourceSummary.rows}</p>
+              <p className="mt-1 font-mono text-white">{summary.rows}</p>
             </div>
             <div>
               <p className="text-muted">Referral rate</p>
               <p className="mt-1 font-mono text-white">
                 {formatPercent(
-                  sourceSummary.referrals / sourceSummary.participants,
+                  summary.referrals / summary.participants,
                 )}
               </p>
             </div>
@@ -75,8 +77,8 @@ export default function AppShell() {
             <div className="min-w-0">
               <p className="text-xs uppercase text-muted">Monitoring terminal</p>
               <p className="truncate text-sm font-semibold text-white">
-                {formatNumber(sourceSummary.participants)} participants across{" "}
-                {sourceSummary.sites} sites
+                {formatNumber(summary.participants)} participants across{" "}
+                {summary.sites} sites
               </p>
             </div>
             <div className="flex items-center gap-2">

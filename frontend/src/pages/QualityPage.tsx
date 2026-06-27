@@ -4,10 +4,33 @@ import PageHeader from "../components/ui/PageHeader";
 import Panel from "../components/ui/Panel";
 import ScoreBar from "../components/ui/ScoreBar";
 import StatusPill from "../components/ui/StatusPill";
-import { qualitySignals, sourceSummary } from "../data/mafyData";
+import { useAnalytics } from "../providers/analyticsContext";
 import { formatNumber } from "../utils/format";
+import type { QualitySignal } from "../types/analytics";
 
 export default function QualityPage() {
+  const { summary: sourceSummary } = useAnalytics();
+  const qualitySignals: QualitySignal[] = [
+    {
+      label: "Missing GPS",
+      count: sourceSummary.gpsMissing,
+      severity: sourceSummary.gpsMissing > 10 ? "High" : "Medium",
+      description: "Location coordinates are absent on activity rows.",
+    },
+    {
+      label: "Duplicate UIDs",
+      count: sourceSummary.duplicateUidRows,
+      severity: sourceSummary.duplicateUidRows > 0 ? "High" : "Low",
+      description: "Repeated sensibilisation identifiers need review.",
+    },
+    {
+      label: "Blank key fields",
+      count: 0,
+      severity: "Low",
+      description: "Region, commune, date, and participant totals are populated.",
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <PageHeader

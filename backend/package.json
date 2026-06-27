@@ -1,0 +1,19 @@
+{
+  "name": "dfm-mafy-agent-backend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "anonymize": "bun src/scripts/anonymize-dataset.ts",
+    "dev": "bun --watch src/server.ts",
+    "start": "bun src/server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.2",
+    "typescript": "^6.0.3"
+  }
+}

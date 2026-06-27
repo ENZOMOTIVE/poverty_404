@@ -23,8 +23,9 @@ import PageHeader from "../components/ui/PageHeader";
 import Panel from "../components/ui/Panel";
 import ScoreBar from "../components/ui/ScoreBar";
 import StatusPill from "../components/ui/StatusPill";
-import { monthlyMetrics, siteMetrics } from "../data/mafyData";
-import type { PriorityLevel, SiteMetric } from "../types/analytics";
+import { useAnalytics } from "../providers/analyticsContext";
+import { runFollowUpSimulation } from "../services/backendApi";
+import type { PriorityLevel, SimulationResult } from "../types/analytics";
 import { cn, formatNumber } from "../utils/format";
 
 const forecastMonths = [
@@ -36,28 +37,7 @@ const forecastMonths = [
   "Dec 2026",
 ];
 
-const siteColors = ["#39ff14", "#22d3ee", "#f8cc45"];
-
-const siteDynamics: Record<
-  string,
-  {
-    seasonality: number[];
-    sensitivity: number;
-  }
-> = {
-  taolagnaro: {
-    seasonality: [2, -1, -4, 3, 5, 1],
-    sensitivity: 0.85,
-  },
-  "ampanihy-ouest": {
-    seasonality: [5, 8, 6, 2, -1, 3],
-    sensitivity: 1.12,
-  },
-  "toliary-i": {
-    seasonality: [-2, 4, 9, 11, 7, 2],
-    sensitivity: 1.28,
-  },
-};
+const siteColors = ["#39ff14", "#22d3ee", "#f8cc45", "#ff4d6d"];
 
 interface RaceLane {
   id: string;
@@ -70,151 +50,121 @@ interface RaceLane {
   explanation: string;
 }
 
-function priorityFromPressure(pressure: number): PriorityLevel {
-  if (pressure >= 74) return "High";
-  if (pressure >= 42) return "Medium";
-  return "Low";
-}
-
-function clamp(value: number, min = 0, max = 100) {
-  return Math.max(min, Math.min(max, value));
-}
-
 function chartKey(siteId: string) {
   return `site_${siteId.replaceAll("-", "_")}`;
 }
 
-function pressureForSite(
-  site: SiteMetric,
-  monthIndex: number,
-  unprioritizedId: string,
-) {
-  const gapFactor = Math.min(site.referralGaps / 18, 1);
-  const qualityFactor = Math.min(site.dataQualityPenalty / 30, 1);
-  const participantFactor = site.participants / 1592;
-  const dynamics = siteDynamics[site.id];
-  const monthFactor = monthIndex + 1;
-  const historicalPulse =
-    monthlyMetrics[monthIndex % monthlyMetrics.length].followupPriorityScore;
-  const exposurePressure =
-    site.outreachLoadScore * 5 +
-    site.riskIntensityScore * 7 +
-    gapFactor * 10 +
-    qualityFactor * 4 +
-    historicalPulse * 3 -
-    site.referralScore * 3;
-  const seasonalPulse = dynamics.seasonality[monthIndex] * dynamics.sensitivity;
-
-  if (site.id === unprioritizedId) {
-    const skippedBacklog =
-      8 + participantFactor * 5 + (site.referralScore < 0.15 ? 3 : 0);
-
-    return clamp(
-      site.followupPriorityScore * 100 +
-        monthFactor *
-          (exposurePressure * 0.72 + skippedBacklog) *
-          dynamics.sensitivity +
-        seasonalPulse,
-    );
-  }
-
-  const routineMitigation =
-    site.referralScore * 7 + site.riskIntensityScore * 2 + 2.2;
-
-  return clamp(
-    site.followupPriorityScore * 100 +
-      monthFactor * (exposurePressure * 0.14 - routineMitigation) +
-      seasonalPulse,
-  );
+function monthKey(index: number) {
+  return `Month ${index + 1}`;
 }
 
-function buildRace(monthIndex: number, unprioritizedId: string): RaceLane[] {
-  return siteMetrics
-    .map((site) => {
-      const pressure = pressureForSite(site, monthIndex, unprioritizedId);
-      const base = site.followupPriorityScore * 100;
-      const peopleAtRisk = Math.round(
-        site.participants *
-          (pressure / 100) *
-          (site.id === unprioritizedId ? 1.12 : 0.68),
-      );
-
-      return {
-        id: site.id,
-        name: site.name,
-        region: site.region,
-        pressure,
-        pace: Math.max(0, pressure - base),
-        peopleAtRisk,
-        priority: priorityFromPressure(pressure),
-        explanation:
-          site.id === unprioritizedId
-            ? "Skipped in this run"
-            : "Routine follow-up remains active",
-      };
-    })
-    .sort((a, b) => b.pressure - a.pressure);
-}
-
-function buildTrajectory(unprioritizedId: string) {
-  return forecastMonths.map((month, monthIndex) => {
-    const row: Record<string, number | string> = {
-      month: month.slice(0, 3),
-    };
-
-    siteMetrics.forEach((site) => {
-      row[chartKey(site.id)] = Math.round(
-        pressureForSite(site, monthIndex, unprioritizedId),
-      );
-    });
-
-    return row;
-  });
-}
-
-function buildVisibleTrajectory(unprioritizedId: string, monthIndex: number) {
-  return buildTrajectory(unprioritizedId).map((row, index) => {
-    if (index <= monthIndex) return row;
-
-    const hiddenRow: Record<string, number | string | null> = {
-      month: row.month,
-    };
-
-    siteMetrics.forEach((site) => {
-      hiddenRow[chartKey(site.id)] = null;
-    });
-
-    return hiddenRow;
-  });
+function monthLabel(index: number) {
+  return forecastMonths[index] ?? monthKey(index);
 }
 
 export default function SimulationPage() {
-  const [unprioritizedId, setUnprioritizedId] = useState(siteMetrics[2].id);
+  const { siteMetrics, backendStatus } = useAnalytics();
+  const [unprioritizedId, setUnprioritizedId] = useState("toliary-i");
   const [monthIndex, setMonthIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [simulation, setSimulation] = useState<SimulationResult | null>(null);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
+  const [error, setError] = useState<string | null>(null);
 
-  const race = useMemo(
-    () => buildRace(monthIndex, unprioritizedId),
-    [monthIndex, unprioritizedId],
+  useEffect(() => {
+    if (!unprioritizedId) return;
+
+    const controller = new AbortController();
+
+    runFollowUpSimulation(
+      { unprioritizedAreaId: unprioritizedId, months: 6 },
+      controller.signal,
+    )
+      .then((result) => {
+        setSimulation(result);
+        setStatus("ready");
+      })
+      .catch((caught: unknown) => {
+        if (controller.signal.aborted) return;
+
+        setSimulation(null);
+        setStatus("error");
+        setError(
+          caught instanceof Error
+            ? caught.message
+            : "Simulation backend unavailable",
+        );
+      });
+
+    return () => controller.abort();
+  }, [unprioritizedId]);
+
+  const monthCount = simulation?.months ?? 6;
+  const monthLabels = useMemo(
+    () => Array.from({ length: monthCount }, (_, index) => monthLabel(index)),
+    [monthCount],
   );
-  const trajectory = useMemo(
-    () => buildVisibleTrajectory(unprioritizedId, monthIndex),
-    [monthIndex, unprioritizedId],
-  );
+  const race = useMemo<RaceLane[]>(() => {
+    if (!simulation) return [];
+
+    return simulation.timeline
+      .filter((item) => item.month === monthKey(monthIndex))
+      .map((item) => {
+        const site = siteMetrics.find((candidate) => candidate.id === item.areaId);
+        const base = (site?.followupPriorityScore ?? 0) * 100;
+
+        return {
+          id: item.areaId,
+          name: item.areaName,
+          region: site?.region ?? "",
+          pressure: item.pressureIndex,
+          pace: Math.max(0, item.pressureIndex - base),
+          peopleAtRisk: item.projectedPeopleExposed,
+          priority: item.priority,
+          explanation:
+            item.areaId === unprioritizedId
+              ? "Skipped in this backend run"
+              : "Routine follow-up remains active",
+        };
+      })
+      .sort((a, b) => b.pressure - a.pressure);
+  }, [monthIndex, simulation, siteMetrics, unprioritizedId]);
+  const trajectory = useMemo(() => {
+    if (!simulation) return [];
+
+    return Array.from({ length: simulation.months }, (_, index) => {
+      const row: Record<string, number | string | null> = {
+        month: monthLabel(index).slice(0, 3),
+      };
+
+      siteMetrics.forEach((site) => {
+        const value = simulation.timeline.find(
+          (item) =>
+            item.month === monthKey(index) && item.areaId === site.id,
+        )?.pressureIndex;
+
+        row[chartKey(site.id)] = index <= monthIndex ? (value ?? null) : null;
+      });
+
+      return row;
+    });
+  }, [monthIndex, simulation, siteMetrics]);
   const selectedSite = siteMetrics.find((site) => site.id === unprioritizedId);
   const leader = race[0];
-  const nextMonth = forecastMonths[monthIndex];
+  const nextMonth = monthLabel(monthIndex);
   const totalPeopleAtRisk = race.reduce(
     (total, lane) => total + lane.peopleAtRisk,
     0,
   );
 
   useEffect(() => {
-    if (!isPlaying) return;
+    if (!isPlaying || status !== "ready") return;
 
     const interval = window.setInterval(() => {
       setMonthIndex((current) => {
-        if (current >= forecastMonths.length - 1) {
+        if (current >= monthCount - 1) {
           setIsPlaying(false);
           return current;
         }
@@ -224,7 +174,7 @@ export default function SimulationPage() {
     }, 1100);
 
     return () => window.clearInterval(interval);
-  }, [isPlaying]);
+  }, [isPlaying, monthCount, status]);
 
   function resetRun() {
     setIsPlaying(false);
@@ -234,14 +184,14 @@ export default function SimulationPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="AI scenario run"
+        kicker="Agentic backend run"
         title="Follow-up pressure simulation"
-        description="Choose an area to leave unprioritised, then play a six-month forecast. Rankings can change as skipped-area backlog compounds and routine follow-up stabilises other areas."
+        description="Choose an area to leave unprioritised. The backend SimulationAgent returns the six-month forecast, and the frontend only animates the returned timeline."
       >
         <div className="flex items-center gap-2 rounded-md border border-neon/40 bg-neon/10 px-3 py-2 text-neon">
           <BrainCircuit className="size-4" aria-hidden="true" />
           <span className="text-xs font-semibold uppercase">
-            Transparent scenario model
+            {backendStatus === "live" ? "Backend agent live" : "API required"}
           </span>
         </div>
       </PageHeader>
@@ -258,8 +208,12 @@ export default function SimulationPage() {
                   key={site.id}
                   type="button"
                   onClick={() => {
+                    setStatus("loading");
+                    setError(null);
+                    setSimulation(null);
+                    setIsPlaying(false);
+                    setMonthIndex(0);
                     setUnprioritizedId(site.id);
-                    resetRun();
                   }}
                   className={cn(
                     "min-w-0 rounded-md border px-3 py-3 text-left transition",
@@ -282,8 +236,9 @@ export default function SimulationPage() {
           <div className="flex flex-wrap gap-2 xl:justify-end">
             <button
               type="button"
+              disabled={status !== "ready"}
               onClick={() => setIsPlaying((current) => !current)}
-              className="inline-flex h-11 items-center gap-2 rounded-md border border-neon/50 bg-neon px-4 text-sm font-semibold text-ink transition hover:bg-neon/85"
+              className="inline-flex h-11 items-center gap-2 rounded-md border border-neon/50 bg-neon px-4 text-sm font-semibold text-ink transition hover:bg-neon/85 disabled:cursor-not-allowed disabled:border-grid disabled:bg-grid disabled:text-muted"
             >
               {isPlaying ? (
                 <Pause className="size-4" aria-hidden="true" />
@@ -304,12 +259,23 @@ export default function SimulationPage() {
         </div>
       </Panel>
 
+      {status === "error" && (
+        <Panel contentClassName="py-3">
+          <p className="text-sm text-danger">
+            SimulationAgent API unavailable. Start the backend on
+            http://127.0.0.1:8787. {error}
+          </p>
+        </Panel>
+      )}
+
       <div className="grid gap-6 xl:grid-cols-12">
         <Panel
           title="Pressure ladder"
-          subtitle={`${nextMonth} forecast. Markers move across low, medium, and high pressure zones as the scenario advances.`}
+          subtitle={`${nextMonth} forecast. Markers move across low, medium, and high pressure zones as the backend scenario advances.`}
           className="xl:col-span-8"
-          action={<StatusPill status={leader.priority} />}
+          action={
+            leader ? <StatusPill status={leader.priority} /> : undefined
+          }
         >
           <div className="simulation-board">
             <div className="grid gap-4 border-b border-grid/70 pb-5 md:grid-cols-3">
@@ -326,7 +292,7 @@ export default function SimulationPage() {
                   Current leader
                 </p>
                 <p className="mt-2 truncate text-xl font-semibold text-white">
-                  {leader.name}
+                  {leader?.name ?? "Loading"}
                 </p>
               </div>
               <div className="rounded-md border border-grid bg-ink-2 p-4">
@@ -341,15 +307,16 @@ export default function SimulationPage() {
             </div>
 
             <div className="mt-5 grid grid-cols-6 gap-2">
-              {forecastMonths.map((month, index) => (
+              {monthLabels.map((month, index) => (
                 <button
                   key={month}
                   type="button"
+                  disabled={status !== "ready"}
                   onClick={() => {
                     setIsPlaying(false);
                     setMonthIndex(index);
                   }}
-                  className="min-w-0 text-left"
+                  className="min-w-0 text-left disabled:cursor-not-allowed"
                 >
                   <div
                     className={cn(
@@ -436,7 +403,7 @@ export default function SimulationPage() {
 
         <Panel
           title="Health-worker readout"
-          subtitle="Simple interpretation of the current run."
+          subtitle="Simple interpretation of the current backend run."
           className="xl:col-span-4"
         >
           <div className="space-y-5">
@@ -448,11 +415,11 @@ export default function SimulationPage() {
                 <Target className="size-4 text-neon" aria-hidden="true" />
               </div>
               <p className="mt-3 text-lg font-semibold text-white">
-                {selectedSite?.name}
+                {selectedSite?.name ?? "Loading"}
               </p>
               <p className="mt-2 text-sm leading-6 text-ash">
-                This run shows what could happen if the selected area is not
-                prioritised while other areas receive routine attention.
+                {simulation?.narrative ??
+                  "The backend SimulationAgent is calculating the pressure timeline."}
               </p>
             </div>
 
@@ -481,7 +448,7 @@ export default function SimulationPage() {
       <div className="grid gap-6 xl:grid-cols-12">
         <Panel
           title="Moving forecast trajectories"
-          subtitle="The lines reveal one month at a time while the run plays."
+          subtitle="The lines reveal backend-returned months one at a time while the run plays."
           className="xl:col-span-8"
         >
           <div className="h-80">
@@ -539,8 +506,8 @@ export default function SimulationPage() {
         </Panel>
 
         <Panel
-          title="Prediction inputs"
-          subtitle="Transparent scoring signals used in the scenario."
+          title="Backend agent inputs"
+          subtitle="Signals used by the SimulationAgent."
           className="xl:col-span-4"
         >
           <div className="space-y-4">

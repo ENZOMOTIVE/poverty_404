@@ -6,10 +6,15 @@ import PageHeader from "../components/ui/PageHeader";
 import Panel from "../components/ui/Panel";
 import ScoreBar from "../components/ui/ScoreBar";
 import StatusPill from "../components/ui/StatusPill";
-import { communeMetrics, siteMetrics, sourceSummary } from "../data/mafyData";
+import { useAnalytics } from "../providers/analyticsContext";
 import { formatNumber, formatPercent } from "../utils/format";
 
 export default function ReferralsPage() {
+  const {
+    communeMetrics,
+    siteMetrics,
+    summary: sourceSummary,
+  } = useAnalytics();
   const gapCommunes = communeMetrics.filter((item) => item.referralGaps > 0);
   const zeroReferralParticipants = gapCommunes.reduce(
     (total, item) => total + item.participants,

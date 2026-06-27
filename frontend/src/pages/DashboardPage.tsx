@@ -15,9 +15,8 @@ import StatusPill from "../components/ui/StatusPill";
 import {
   monthlyMetrics,
   queueItems,
-  siteMetrics,
-  sourceSummary,
 } from "../data/mafyData";
+import { useAnalytics } from "../providers/analyticsContext";
 import {
   formatNumber,
   formatPercent,
@@ -25,6 +24,12 @@ import {
 } from "../utils/format";
 
 export default function DashboardPage() {
+  const {
+    summary: sourceSummary,
+    siteMetrics,
+    backendStatus,
+    error,
+  } = useAnalytics();
   const referralRate = sourceSummary.referrals / sourceSummary.participants;
   const topSite = siteMetrics[0];
   const marketTape = [
@@ -45,10 +50,18 @@ export default function DashboardPage() {
         <div className="flex items-center gap-2 rounded-md border border-grid bg-panel px-3 py-2">
           <span className="size-2 rounded-full bg-neon shadow-neon" />
           <span className="text-xs font-semibold uppercase text-white">
-            Dataset loaded
+            {backendStatus === "live" ? "Backend live" : "Static fallback"}
           </span>
         </div>
       </PageHeader>
+
+      {backendStatus === "offline" && (
+        <Panel contentClassName="py-3">
+          <p className="text-sm text-amber">
+            Backend unavailable, using cached workbook fixtures. {error}
+          </p>
+        </Panel>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
@@ -197,11 +210,11 @@ export default function DashboardPage() {
               <p className="text-sm font-semibold text-white">
                 Highest follow-up watch
               </p>
-              <p className="text-xs text-muted">{topSite.region}</p>
+              <p className="text-xs text-muted">{topSite?.region}</p>
             </div>
           </div>
           <p className="text-sm leading-6 text-ash">
-            {topSite.name} combines all recorded referrals with the strongest
+            {topSite?.name} combines all recorded referrals with the strongest
             referral score. Ampanihy Ouest carries the largest outreach load but
             has zero referrals, making referral recording the clearest next
             review target.

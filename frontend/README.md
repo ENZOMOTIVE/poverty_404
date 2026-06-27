@@ -26,3 +26,13 @@ npm run dev
 npm run build
 npm run lint
 ```
+
+## Backend Integration
+
+The frontend reads live workbook metrics and simulation timelines from the Bun backend.
+
+```bash
+VITE_API_BASE_URL=http://127.0.0.1:8787
+```
+
+If the analytics summary endpoint is unavailable, dashboard pages fall back to the bundled workbook fixtures. The simulation page requires the backend `SimulationAgent` endpoint because forecasts are no longer generated locally.

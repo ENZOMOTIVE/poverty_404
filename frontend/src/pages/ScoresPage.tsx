@@ -3,10 +3,12 @@ import PageHeader from "../components/ui/PageHeader";
 import Panel from "../components/ui/Panel";
 import ScoreBar from "../components/ui/ScoreBar";
 import StatusPill from "../components/ui/StatusPill";
-import { communeMetrics, siteMetrics } from "../data/mafyData";
+import { useAnalytics } from "../providers/analyticsContext";
 import { formatNumber, priorityFromScore } from "../utils/format";
 
 export default function ScoresPage() {
+  const { communeMetrics, siteMetrics } = useAnalytics();
+
   return (
     <div className="space-y-6">
       <PageHeader
