@@ -222,8 +222,8 @@ export default function OperationsPage() {
                   {step.decision}
                 </p>
                 <ul className="mt-3 space-y-2 text-sm leading-5 text-muted">
-                  {step.evidence.map((item) => (
-                    <li key={item}>{item}</li>
+                  {step.evidence.map((item, index) => (
+                    <li key={`${step.agent}-evidence-${index}`}>{item}</li>
                   ))}
                 </ul>
               </article>
@@ -333,9 +333,9 @@ function ActionPanel({
         <div>
           <p className="text-xs font-semibold uppercase text-muted">Evidence</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            {action.evidence.map((item) => (
+            {action.evidence.map((item, index) => (
               <span
-                key={item}
+                key={`${action.id}-evidence-${index}`}
                 className="rounded border border-grid bg-ink-2 px-2 py-1 text-xs text-ash"
               >
                 {item}
@@ -346,9 +346,9 @@ function ActionPanel({
         <div>
           <p className="text-xs font-semibold uppercase text-muted">Blockers</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            {action.blockers.map((item) => (
+            {action.blockers.map((item, index) => (
               <span
-                key={item}
+                key={`${action.id}-blocker-${index}`}
                 className="rounded border border-amber/30 bg-amber/10 px-2 py-1 text-xs text-amber"
               >
                 {item}

@@ -238,9 +238,9 @@ export default function ForecastPage() {
           >
             <p className="text-sm leading-6 text-ash">{forecast.summary}</p>
             <div className="mt-4 flex flex-wrap gap-2">
-              {forecast.scenario.assumptions.map((item) => (
+              {forecast.scenario.assumptions.map((item, index) => (
                 <span
-                  key={item}
+                  key={`${forecast.scenario.id}-assumption-${index}`}
                   className="rounded border border-grid bg-ink-2 px-2 py-1 text-xs text-muted"
                 >
                   {item}
@@ -308,9 +308,9 @@ export default function ForecastPage() {
                     <Metric label="P90" value={area.projectedP90} />
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {area.drivers.slice(0, 3).map((driver) => (
+                    {area.drivers.slice(0, 3).map((driver, index) => (
                       <span
-                        key={driver}
+                        key={`${area.areaId}-driver-${index}`}
                         className="rounded border border-grid bg-panel px-2 py-1 text-xs text-muted"
                       >
                         {driver}

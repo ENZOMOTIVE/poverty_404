@@ -214,9 +214,9 @@ function ActionCard({ item, rank }: { item: FollowUpAction; rank: number }) {
         <div>
           <p className="text-xs font-semibold uppercase text-muted">Blockers</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            {item.blockers.map((blocker) => (
+            {item.blockers.map((blocker, index) => (
               <span
-                key={blocker}
+                key={`${item.id}-blocker-${index}`}
                 className="rounded border border-grid bg-ink-2 px-2 py-1 text-xs text-ash"
               >
                 {blocker}
