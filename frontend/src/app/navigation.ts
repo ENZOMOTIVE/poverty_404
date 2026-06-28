@@ -2,7 +2,6 @@ import {
   Activity,
   BarChart3,
   DatabaseZap,
-  FileDown,
   Gauge,
   GitPullRequestArrow,
   MapPinned,
@@ -46,11 +45,6 @@ export const navigationItems = [
     label: "What-if",
     path: "/forecast",
     icon: TrendingUp,
-  },
-  {
-    label: "Reports",
-    path: "/reports",
-    icon: FileDown,
   },
   {
     label: "Quality",

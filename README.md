@@ -35,7 +35,7 @@ Health organisations often hold valuable outreach and monitoring data in spreads
 | Dataset input | Lets users upload XLSX, XLS, or CSV exports and select the active data feed for all metrics and agents. |
 | Scenario planning | Runs Monte Carlo what-if forecasts so teams can discuss possible future pressure under selected planning assumptions. |
 | Data confidence checks | Flags missing GPS, duplicate identifiers, and completeness issues that can weaken interpretation. |
-| Report package | Produces downloadable HTML, JSON, and CSV reports with charts, summaries, actions, and evidence tables. |
+| PDF reporting | Downloads a generated PDF report from the navbar using the active dataset and current agent workflow. |
 | Madagascar-first experience | Opens with a one-time 3D globe focused on Madagascar, then moves directly into the MAFY operations workspace. |
 
 ## How It Works
@@ -76,7 +76,6 @@ For the agent architecture, see [`docs/AGENTIC_INFRASTRUCTURE.md`](docs/AGENTIC_
 | Risk | Operational risk markers by site and commune. |
 | Operations | Current follow-up actions, owners, blockers, and explainable rationale. |
 | What-if | Monte Carlo planning forecasts with animated trajectory movement. |
-| Reports | Shareable HTML, JSON, and CSV report downloads. |
 | Quality | Data confidence issues that affect interpretation and follow-up reliability. |
 | Scores | Transparent score components behind MAFY prioritisation. |
 
@@ -90,7 +89,7 @@ MAFY uses a coordinator and specialist agents for dataset review, follow-up plan
 | Dataset registry | `GET /api/datasets`, `POST /api/datasets/upload`, `DELETE /api/datasets/:id` | Uploaded dataset management and feed selection. |
 | Follow-up operations | `POST /api/operations/follow-up` | Field-ready actions with evidence, owners, blockers, and rationale. |
 | What-if planning | `POST /api/forecast/what-if` | Monte Carlo trajectories, movement frames, and scenario explanation. |
-| Report package | `POST /api/reports/detailed` | Structured report payload for HTML, JSON, and CSV downloads. |
+| PDF report package | `POST /api/reports/detailed` | Structured report payload used by the navbar PDF download. |
 | Full agent review | `POST /api/agents/run` | Coordinator-run specialist outputs for deeper inspection. |
 
 ## Responsible AI Boundaries

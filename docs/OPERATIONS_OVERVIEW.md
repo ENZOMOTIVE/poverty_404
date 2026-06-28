@@ -9,7 +9,7 @@ MAFY treats the anonymized sensitisation workbook as the source of truth for ope
 | Overview | Shows current reach, referral rate, data issues, monthly activity, and priority scores. |
 | Operations | Converts workbook evidence into assignable follow-up actions. |
 | What-if | Runs Monte Carlo scenario forecasts for planning discussions. |
-| Reports | Generates downloadable HTML, JSON, and CSV reports. |
+| Navbar PDF download | Generates a PDF report from the active dataset and current agent workflow. |
 | Quality | Highlights data issues that can weaken interpretation. |
 
 ## Agent Service Operations
@@ -33,11 +33,9 @@ MAFY includes a one-time Three.js landing screen with a globe oriented toward Ma
 
 ## Downloads
 
-The Reports page creates local downloads after the agent service returns a completed report:
+The navbar PDF action creates a local download after the agent service returns a completed report:
 
-- HTML includes report text, tables, and SVG charts.
-- JSON contains the full report payload.
-- CSV contains exportable tabular data for review.
+- PDF includes report text, follow-up actions, site metrics, and agent findings.
 
 ## Local URLs
 

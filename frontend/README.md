@@ -35,7 +35,6 @@ src/
 | Risk | Operational risk intensity signals. |
 | Operations | MAFY-generated follow-up actions and rationale. |
 | What-if | Monte Carlo scenario forecast with animated trajectory and race views. |
-| Reports | Generate and download HTML, JSON, and CSV reports. |
 | Quality | Data quality findings and implications. |
 | Scores | Score component transparency. |
 
@@ -71,9 +70,9 @@ Important routes used by the workspace:
 | Dataset input | `GET /api/datasets`, `POST /api/datasets/upload` |
 | Operations | `POST /api/operations/follow-up` |
 | What-if forecast | `POST /api/forecast/what-if` |
-| Reports | `POST /api/reports/detailed` |
+| Navbar PDF download | `POST /api/reports/detailed` |
 
-If the dataset summary endpoint is unavailable, summary pages fall back to cached workbook fixtures. Operations, What-if, Reports, and dataset upload require the MAFY agent service because they run active agent workflows or write dataset files.
+If the dataset summary endpoint is unavailable, summary pages fall back to cached workbook fixtures. Operations, What-if, navbar PDF downloads, and dataset upload require the MAFY agent service because they run active agent workflows or write dataset files.
 
 The active dataset id is stored in browser local storage as `mafy-active-dataset-id`.
 
@@ -81,8 +80,8 @@ The active dataset id is stored in browser local storage as `mafy-active-dataset
 
 - The landing screen stores `mafy-console-started` in local storage after the Start button is pressed.
 - The What-if page is intentionally labelled as probabilistic scenario forecasting.
-- Report downloads are generated locally from the structured service report payload.
-- Queue still exists as a route, but the main navigation favors Operations to avoid repeated action-list views.
+- PDF downloads are generated locally from the structured service report payload.
+- Operations owns the follow-up action workflow to avoid repeated action-list views.
 
 ## More Documentation
 

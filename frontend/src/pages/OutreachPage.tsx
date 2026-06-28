@@ -1,7 +1,5 @@
 import { Layers, Map, Timer, Users } from "lucide-react";
 import LocationMixChart from "../components/charts/LocationMixChart";
-import MonthlyActivityChart from "../components/charts/MonthlyActivityChart";
-import SiteScoreBars from "../components/charts/SiteScoreBars";
 import MetricCard from "../components/ui/MetricCard";
 import PageHeader from "../components/ui/PageHeader";
 import Panel from "../components/ui/Panel";
@@ -11,7 +9,7 @@ import { useAnalytics } from "../providers/analyticsContext";
 import { formatNumber } from "../utils/format";
 
 export default function OutreachPage() {
-  const { siteMetrics, communeMetrics, monthlyMetrics } = useAnalytics();
+  const { siteMetrics, communeMetrics } = useAnalytics();
   const totalSessions = siteMetrics.reduce((total, site) => total + site.sessions, 0);
   const totalFokontany = siteMetrics.reduce(
     (total, site) => total + site.uniqueFokontany,
@@ -68,37 +66,16 @@ export default function OutreachPage() {
 
       <div className="grid gap-6 xl:grid-cols-12">
         <Panel
-          title="Activity volume"
-          subtitle="Participant volume by month with referrals overlaid."
-          className="xl:col-span-8"
-        >
-          <MonthlyActivityChart data={monthlyMetrics} />
-        </Panel>
-        <Panel
           title="Location mix"
           subtitle="Where sensitisation activities were recorded."
           className="xl:col-span-4"
         >
           <LocationMixChart data={locationMix} />
         </Panel>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-12">
-        <Panel
-          title="Outreach load by site"
-          subtitle="Weighted score from participants, sessions, coverage, and duration."
-          className="xl:col-span-7"
-        >
-          <SiteScoreBars
-            data={siteMetrics}
-            scoreKey="outreachLoadScore"
-            color="#39ff14"
-          />
-        </Panel>
         <Panel
           title="Commune coverage board"
           subtitle="Top communes by outreach load score."
-          className="xl:col-span-5"
+          className="xl:col-span-8"
         >
           <div className="space-y-4">
             {topCommunes.slice(0, 7).map((commune) => (

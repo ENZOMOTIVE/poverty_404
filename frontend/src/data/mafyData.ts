@@ -3,7 +3,6 @@ import type {
   LocationMix,
   MonthlyMetric,
   QualitySignal,
-  QueueItem,
   SiteMetric,
   SourceSummary,
 } from "../types/analytics";
@@ -388,59 +387,6 @@ export const qualitySignals: QualitySignal[] = [
     count: 71,
     severity: "Medium",
     description: "Questions, observations, and challenge notes exist on all rows.",
-  },
-];
-
-export const queueItems: QueueItem[] = [
-  {
-    id: "q-taolagnaro-cu",
-    priority: "Medium",
-    location: "Taolagnaro CU",
-    region: "Anosy",
-    score: 0.653,
-    reason: "Highest commune referral volume with sustained CSB activity.",
-    action: "Verify referral recording and prepare CSB follow-up notes.",
-    evidence: ["32 referrals", "392 participants", "16 sessions"],
-  },
-  {
-    id: "q-toliary-i",
-    priority: "Medium",
-    location: "Toliary-I",
-    region: "Atsimo-Andrefana",
-    score: 0.576,
-    reason: "High outreach load, high-risk participant signal, and zero referrals.",
-    action: "Review referral pathway and field staff recording practices.",
-    evidence: ["437 participants", "0 referrals", "13 sessions"],
-  },
-  {
-    id: "q-manambaro",
-    priority: "Medium",
-    location: "Manambaro",
-    region: "Anosy",
-    score: 0.421,
-    reason: "Barrier signal appears with the strongest referral rate among communes.",
-    action: "Check access or cost questions and confirm whether outreach needs revisit.",
-    evidence: ["11 referrals", "1 barrier signal", "7 sessions"],
-  },
-  {
-    id: "q-ejeda",
-    priority: "Low",
-    location: "Ejeda",
-    region: "Atsimo-Andrefana",
-    score: 0.395,
-    reason: "Broad fokontany coverage with referral gaps.",
-    action: "Audit zero-referral activities before the next monthly review.",
-    evidence: ["6 fokontany", "2 referral gaps", "182 participants"],
-  },
-  {
-    id: "q-vohitany",
-    priority: "Low",
-    location: "Vohitany",
-    region: "Atsimo-Andrefana",
-    score: 0.381,
-    reason: "Large participant volume and three high-outreach zero-referral records.",
-    action: "Ask field team whether referrals were made outside the form.",
-    evidence: ["273 participants", "3 referral gaps", "0 referrals"],
   },
 ];
 

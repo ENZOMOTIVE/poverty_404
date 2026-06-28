@@ -464,12 +464,177 @@ export function buildDetailedReportCsv(report: DetailedReport) {
   return sections.join("\n");
 }
 
+function pdfText(value: unknown) {
+  return String(value ?? "")
+    .normalize("NFKD")
+    .replace(/[^\x20-\x7E]/g, " ")
+    .replaceAll("\\", "\\\\")
+    .replaceAll("(", "\\(")
+    .replaceAll(")", "\\)");
+}
+
+function wrapText(value: unknown, maxLength = 92) {
+  const words = String(value ?? "")
+    .normalize("NFKD")
+    .replace(/[^\x20-\x7E]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+  const lines: string[] = [];
+  let current = "";
+
+  words.forEach((word) => {
+    const next = current ? `${current} ${word}` : word;
+
+    if (next.length > maxLength && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = next;
+    }
+  });
+
+  if (current) lines.push(current);
+
+  return lines.length > 0 ? lines : [""];
+}
+
+function pdfLines(report: DetailedReport) {
+  const lines: Array<{ text: string; size?: number; gap?: number }> = [
+    { text: report.title, size: 18, gap: 10 },
+    {
+      text: `Generated ${new Date(report.generatedAt).toLocaleString()} from ${report.dataset.dataset}`,
+      size: 10,
+      gap: 12,
+    },
+    {
+      text: `Rows: ${number(report.dataset.rows)} | Participants: ${number(report.dataset.participants)} | Referrals: ${number(report.dataset.referrals)} | Actions: ${number(report.operations?.actions.length ?? 0)}`,
+      size: 10,
+      gap: 14,
+    },
+    { text: "Executive Summary", size: 14, gap: 8 },
+    ...wrapText(report.executiveSummary, 92).map((text) => ({ text, size: 10 })),
+    { text: "Follow-up Actions", size: 14, gap: 8 },
+  ];
+
+  (report.operations?.actions ?? []).slice(0, 16).forEach((action, index) => {
+    lines.push({
+      text: `${index + 1}. ${action.areaName} | ${action.priority} | ${action.owner} | ${action.dueWindow}`,
+      size: 10,
+      gap: 3,
+    });
+    wrapText(`${action.action} Reason: ${action.reason}`, 92).forEach((text) => {
+      lines.push({ text: `   ${text}`, size: 9 });
+    });
+  });
+
+  lines.push({ text: "Site Metrics", size: 14, gap: 8 });
+  report.siteMetrics.forEach((site) => {
+    lines.push({
+      text: `${site.name} | ${site.region} | ${number(site.participants)} people | ${number(site.referrals)} referrals | ${percent(site.followupPriorityScore)} follow-up`,
+      size: 10,
+    });
+  });
+
+  lines.push({ text: "Agent Findings", size: 14, gap: 8 });
+  report.agentResults
+    .flatMap((agentResult) =>
+      agentResult.findings.map((finding) => ({
+        agent: agentResult.agent,
+        finding,
+      })),
+    )
+    .slice(0, 24)
+    .forEach(({ agent, finding }) => {
+      wrapText(
+        `${agent}: ${finding.title} (${finding.severity}) - ${finding.recommendation}`,
+        92,
+      ).forEach((text) => lines.push({ text, size: 9 }));
+    });
+
+  return lines;
+}
+
+export function buildDetailedReportPdf(report: DetailedReport) {
+  const pageHeight = 792;
+  const top = 742;
+  const bottom = 54;
+  const left = 54;
+  const lineHeight = 14;
+  const pages: string[][] = [[]];
+  let y = top;
+
+  pdfLines(report).forEach(({ text, size = 10, gap = 0 }) => {
+    y -= gap;
+
+    if (y < bottom) {
+      pages.push([]);
+      y = top;
+    }
+
+    pages[pages.length - 1]?.push(
+      `BT /F1 ${size} Tf ${left} ${y} Td (${pdfText(text)}) Tj ET`,
+    );
+    y -= lineHeight;
+  });
+
+  const objects: string[] = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+  ];
+  const pageObjectIds: number[] = [];
+
+  pages.forEach((pageCommands, index) => {
+    const pageObjectId = 4 + index * 2;
+    const contentObjectId = pageObjectId + 1;
+    const content = pageCommands.join("\n");
+
+    pageObjectIds.push(pageObjectId);
+    objects[pageObjectId - 1] =
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 ${pageHeight}] /Resources << /Font << /F1 3 0 R >> >> /Contents ${contentObjectId} 0 R >>`;
+    objects[contentObjectId - 1] =
+      `<< /Length ${content.length} >>\nstream\n${content}\nendstream`;
+  });
+
+  objects[1] =
+    `<< /Type /Pages /Kids [${pageObjectIds.map((id) => `${id} 0 R`).join(" ")}] /Count ${pageObjectIds.length} >>`;
+
+  let pdf = "%PDF-1.4\n";
+  const offsets = [0];
+
+  objects.forEach((object, index) => {
+    offsets.push(pdf.length);
+    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+
+  const xrefOffset = pdf.length;
+  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  offsets.slice(1).forEach((offset) => {
+    pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
+  });
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+
+  return new Blob([pdf], { type: "application/pdf" });
+}
+
 export function downloadTextFile(
   filename: string,
   content: string,
   type: string,
 ) {
   const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
+export function downloadBlobFile(filename: string, blob: Blob) {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
 

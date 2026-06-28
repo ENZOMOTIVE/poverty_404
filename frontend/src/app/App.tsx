@@ -10,8 +10,6 @@ const ReferralsPage = lazy(() => import("../pages/ReferralsPage"));
 const RiskPage = lazy(() => import("../pages/RiskPage"));
 const OperationsPage = lazy(() => import("../pages/OperationsPage"));
 const ForecastPage = lazy(() => import("../pages/ForecastPage"));
-const ReportsPage = lazy(() => import("../pages/ReportsPage"));
-const QueuePage = lazy(() => import("../pages/QueuePage"));
 const QualityPage = lazy(() => import("../pages/QualityPage"));
 const ScoresPage = lazy(() => import("../pages/ScoresPage"));
 
@@ -45,8 +43,6 @@ export default function App() {
             <Route path="risk" element={page(<RiskPage />)} />
             <Route path="operations" element={page(<OperationsPage />)} />
             <Route path="forecast" element={page(<ForecastPage />)} />
-            <Route path="reports" element={page(<ReportsPage />)} />
-            <Route path="queue" element={page(<QueuePage />)} />
             <Route path="quality" element={page(<QualityPage />)} />
             <Route path="scores" element={page(<ScoresPage />)} />
             <Route path="*" element={<Navigate to="/" replace />} />

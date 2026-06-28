@@ -1,12 +1,42 @@
-import { DatabaseZap } from "lucide-react";
+import { DatabaseZap, Download, Loader2 } from "lucide-react";
+import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { navigationItems } from "../../app/navigation";
 import { useAnalytics } from "../../providers/analyticsContext";
+import { generateDetailedReport } from "../../services/backendApi";
+import {
+  buildDetailedReportPdf,
+  downloadBlobFile,
+  reportFilename,
+} from "../../services/reportDownloads";
 import { cn, formatNumber, formatPercent } from "../../utils/format";
 import StatusPill from "../ui/StatusPill";
 
 export default function AppShell() {
-  const { summary, backendStatus } = useAnalytics();
+  const { summary, backendStatus, datasetId } = useAnalytics();
+  const [pdfStatus, setPdfStatus] = useState<"idle" | "loading" | "error">(
+    "idle",
+  );
+
+  async function downloadPdfReport() {
+    setPdfStatus("loading");
+
+    try {
+      const response = await generateDetailedReport(
+        {
+          limit: 12,
+          includeRationale: true,
+        },
+        datasetId,
+      );
+      const report = response.report;
+
+      downloadBlobFile(reportFilename(report, "pdf"), buildDetailedReportPdf(report));
+      setPdfStatus("idle");
+    } catch {
+      setPdfStatus("error");
+    }
+  }
 
   return (
     <div className="min-h-screen bg-ink text-ash terminal-bg">
@@ -85,11 +115,28 @@ export default function AppShell() {
                 {summary.sites} sites
               </p>
             </div>
-            <div className="hidden items-center gap-2 rounded-md border border-grid bg-panel px-3 py-2 text-xs font-semibold uppercase text-muted md:flex">
-              <DatabaseZap className="size-4 text-neon" aria-hidden="true" />
-              <span>
-                {backendStatus === "live" ? "MAFY data live" : "Cached MAFY data"}
-              </span>
+            <div className="flex shrink-0 items-center gap-2">
+              {pdfStatus === "error" && (
+                <span className="hidden text-xs font-semibold uppercase text-danger sm:inline">
+                  PDF failed
+                </span>
+              )}
+              <button
+                type="button"
+                disabled={pdfStatus === "loading" || backendStatus !== "live"}
+                onClick={downloadPdfReport}
+                className="inline-flex h-10 items-center gap-2 rounded-md border border-neon/50 bg-neon px-3 text-xs font-semibold uppercase text-ink transition hover:bg-neon/85 disabled:cursor-not-allowed disabled:border-grid disabled:bg-grid disabled:text-muted sm:px-4"
+              >
+                {pdfStatus === "loading" ? (
+                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <Download className="size-4" aria-hidden="true" />
+                )}
+                <span className="hidden sm:inline">
+                  {pdfStatus === "loading" ? "Generating PDF" : "Download PDF"}
+                </span>
+                <span className="sm:hidden">PDF</span>
+              </button>
             </div>
           </div>
           <nav className="flex gap-2 overflow-x-auto border-t border-grid/50 px-4 py-2 thin-scrollbar lg:hidden">

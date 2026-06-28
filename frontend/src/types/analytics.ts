@@ -302,17 +302,6 @@ export interface LocationMix {
   value: number;
 }
 
-export interface QueueItem {
-  id: string;
-  priority: PriorityLevel;
-  location: string;
-  region: string;
-  score: number;
-  reason: string;
-  action: string;
-  evidence: string[];
-}
-
 export interface QualitySignal {
   label: string;
   count: number;
