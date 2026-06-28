@@ -28,6 +28,7 @@ import {
   AnalyticsContext,
   type AnalyticsContextValue,
   type BackendStatus,
+  type GeoFilter,
 } from "./analyticsContext";
 
 const activeDatasetStorageKey = "mafy-active-dataset-id";
@@ -68,6 +69,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
   const [backendStatus, setBackendStatus] =
     useState<BackendStatus>("loading");
   const [error, setError] = useState<string | null>(null);
+  const [geoFilter, setGeoFilter] = useState<GeoFilter | null>(null);
 
   const setDatasetId = useCallback((nextDatasetId: string) => {
     setBackendStatus("loading");
@@ -148,16 +150,51 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
     return () => controller.abort();
   }, [datasetId]);
 
+  const filteredSiteMetrics = useMemo(() => {
+    if (!geoFilter) return siteMetrics;
+    return siteMetrics.filter((site) =>
+      geoFilter.level === "region"
+        ? site.region === geoFilter.value
+        : site.district === geoFilter.value,
+    );
+  }, [siteMetrics, geoFilter]);
+
+  const filteredCommuneMetrics = useMemo(() => {
+    if (!geoFilter) return communeMetrics;
+    return communeMetrics.filter((commune) =>
+      geoFilter.level === "region"
+        ? commune.region === geoFilter.value
+        : commune.district === geoFilter.value,
+    );
+  }, [communeMetrics, geoFilter]);
+
+  const filteredSummary = useMemo(() => {
+    if (!geoFilter) return summary;
+    const sites = filteredSiteMetrics;
+    return {
+      ...summary,
+      participants: sites.reduce((t, s) => t + s.participants, 0),
+      referrals: sites.reduce((t, s) => t + s.referrals, 0),
+      rows: sites.reduce((t, s) => t + s.sessions, 0),
+      sites: sites.length,
+      regions: new Set(sites.map((s) => s.region)).size,
+    };
+  }, [summary, geoFilter, filteredSiteMetrics]);
+
   const value = useMemo(
     () => ({
-      summary,
-      siteMetrics,
-      communeMetrics,
+      summary: filteredSummary,
+      siteMetrics: filteredSiteMetrics,
+      communeMetrics: filteredCommuneMetrics,
       monthlyMetrics,
       backendStatus,
       error,
       datasetId,
       datasets,
+      allSiteMetrics: siteMetrics,
+      allCommuneMetrics: communeMetrics,
+      geoFilter,
+      setGeoFilter,
       setDatasetId,
       refreshDatasets,
       uploadDataset,
@@ -166,15 +203,18 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
     [
       backendStatus,
       communeMetrics,
+      filteredCommuneMetrics,
+      filteredSiteMetrics,
+      filteredSummary,
       datasetId,
       datasets,
       deleteDataset,
       error,
+      geoFilter,
       monthlyMetrics,
       refreshDatasets,
       setDatasetId,
       siteMetrics,
-      summary,
       uploadDataset,
     ],
   );

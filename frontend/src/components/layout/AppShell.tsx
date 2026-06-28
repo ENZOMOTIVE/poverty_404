@@ -1,12 +1,33 @@
-import { DatabaseZap } from "lucide-react";
+import { DatabaseZap, Map, X } from "lucide-react";
+import { lazy, Suspense, useCallback, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { navigationItems } from "../../app/navigation";
 import { useAnalytics } from "../../providers/analyticsContext";
+import type { GeoFilter } from "../../providers/analyticsContext";
 import { cn, formatNumber, formatPercent } from "../../utils/format";
 import StatusPill from "../ui/StatusPill";
 
+const MapView = lazy(() => import("../map/MapView"));
+
 export default function AppShell() {
-  const { summary, backendStatus } = useAnalytics();
+  const { summary, backendStatus, allSiteMetrics, allCommuneMetrics, geoFilter, setGeoFilter } = useAnalytics();
+  const [showMap, setShowMap] = useState(false);
+
+  const handleMapSelect = useCallback(
+    (filter: GeoFilter) => {
+      setGeoFilter(filter);
+      setShowMap(false);
+    },
+    [setGeoFilter],
+  );
+
+  const handleMapClose = useCallback(() => {
+    setShowMap(false);
+  }, []);
+
+  const handleClearFilter = useCallback(() => {
+    setGeoFilter(null);
+  }, [setGeoFilter]);
 
   return (
     <div className="min-h-screen bg-ink text-ash terminal-bg">
@@ -85,11 +106,34 @@ export default function AppShell() {
                 {summary.sites} sites
               </p>
             </div>
-            <div className="hidden items-center gap-2 rounded-md border border-grid bg-panel px-3 py-2 text-xs font-semibold uppercase text-muted md:flex">
-              <DatabaseZap className="size-4 text-neon" aria-hidden="true" />
-              <span>
-                {backendStatus === "live" ? "MAFY data live" : "Cached MAFY data"}
-              </span>
+            <div className="flex items-center gap-2">
+              {geoFilter && (
+                <button
+                  type="button"
+                  onClick={handleClearFilter}
+                  className="flex items-center gap-2 rounded-md border border-amber/40 bg-amber/10 px-3 py-2 text-xs font-semibold uppercase text-amber transition hover:bg-amber/20"
+                >
+                  <span>Showing: {geoFilter.value}</span>
+                  <X className="size-3" aria-hidden="true" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowMap(true)}
+                className="flex items-center gap-2 rounded-md border border-neon/40 bg-neon/10 px-3 py-2 text-xs font-semibold uppercase text-neon transition hover:bg-neon/20"
+              >
+                <Map className="size-4" aria-hidden="true" />
+                <span className="hidden md:inline">
+                  {geoFilter ? "Change Region" : "Show Map View"}
+                </span>
+                <span className="md:hidden">🗺️</span>
+              </button>
+              <div className="hidden items-center gap-2 rounded-md border border-grid bg-panel px-3 py-2 text-xs font-semibold uppercase text-muted md:flex">
+                <DatabaseZap className="size-4 text-neon" aria-hidden="true" />
+                <span>
+                  {backendStatus === "live" ? "MAFY data live" : "Cached MAFY data"}
+                </span>
+              </div>
             </div>
           </div>
           <nav className="flex gap-2 overflow-x-auto border-t border-grid/50 px-4 py-2 thin-scrollbar lg:hidden">
@@ -118,6 +162,23 @@ export default function AppShell() {
           <Outlet />
         </main>
       </div>
+
+      {showMap && (
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 z-50 grid place-items-center bg-ink">
+              <p className="text-sm text-muted">Loading map...</p>
+            </div>
+          }
+        >
+          <MapView
+            siteMetrics={allSiteMetrics}
+            communeMetrics={allCommuneMetrics}
+            onSelect={handleMapSelect}
+            onClose={handleMapClose}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }
