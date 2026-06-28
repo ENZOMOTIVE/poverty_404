@@ -1,12 +1,13 @@
 import {
   Activity,
   BarChart3,
-  ClipboardList,
+  FileDown,
   Gauge,
   GitPullRequestArrow,
   MapPinned,
-  Play,
+  ClipboardCheck,
   ShieldCheck,
+  TrendingUp,
 } from "lucide-react";
 
 export const navigationItems = [
@@ -31,14 +32,19 @@ export const navigationItems = [
     icon: Gauge,
   },
   {
-    label: "Simulation",
-    path: "/simulation",
-    icon: Play,
+    label: "Operations",
+    path: "/operations",
+    icon: ClipboardCheck,
   },
   {
-    label: "Queue",
-    path: "/queue",
-    icon: ClipboardList,
+    label: "What-if",
+    path: "/forecast",
+    icon: TrendingUp,
+  },
+  {
+    label: "Reports",
+    path: "/reports",
+    icon: FileDown,
   },
   {
     label: "Quality",

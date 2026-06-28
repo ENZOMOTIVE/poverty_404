@@ -23,7 +23,7 @@ export class OutreachAgent implements SpecialistAgent<AreaMetric[]> {
           `${area.uniqueFokontany} fokontany reached`,
         ],
         recommendation:
-          "Use this load score to anticipate future follow-up demand, not disease burden.",
+          "Use this load score to assign current follow-up workload, not disease burden.",
       })),
       leaders,
     );

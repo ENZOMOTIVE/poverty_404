@@ -12,10 +12,6 @@ import PageHeader from "../components/ui/PageHeader";
 import Panel from "../components/ui/Panel";
 import ScoreBar from "../components/ui/ScoreBar";
 import StatusPill from "../components/ui/StatusPill";
-import {
-  monthlyMetrics,
-  queueItems,
-} from "../data/mafyData";
 import { useAnalytics } from "../providers/analyticsContext";
 import {
   formatNumber,
@@ -27,11 +23,16 @@ export default function DashboardPage() {
   const {
     summary: sourceSummary,
     siteMetrics,
+    communeMetrics,
+    monthlyMetrics,
     backendStatus,
     error,
   } = useAnalytics();
   const referralRate = sourceSummary.referrals / sourceSummary.participants;
   const topSite = siteMetrics[0];
+  const topCommunes = [...communeMetrics].sort(
+    (a, b) => b.followupPriorityScore - a.followupPriorityScore,
+  );
   const marketTape = [
     ["Sessions", sourceSummary.rows.toString()],
     ["Participants", formatNumber(sourceSummary.participants)],
@@ -50,7 +51,7 @@ export default function DashboardPage() {
         <div className="flex items-center gap-2 rounded-md border border-grid bg-panel px-3 py-2">
           <span className="size-2 rounded-full bg-neon shadow-neon" />
           <span className="text-xs font-semibold uppercase text-white">
-            {backendStatus === "live" ? "Backend live" : "Static fallback"}
+            {backendStatus === "live" ? "Backend live" : "Cached workbook"}
           </span>
         </div>
       </PageHeader>
@@ -125,20 +126,26 @@ export default function DashboardPage() {
           className="xl:col-span-4"
         >
           <div className="space-y-5">
-            {queueItems.slice(0, 4).map((item) => (
+            {topCommunes.slice(0, 4).map((item) => (
               <div key={item.id} className="space-y-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-white">
-                      {item.location}
+                      {item.name}
                     </p>
                     <p className="text-xs text-muted">{item.region}</p>
                   </div>
-                  <StatusPill status={item.priority} />
+                  <StatusPill
+                    status={priorityFromScore(item.followupPriorityScore)}
+                  />
                 </div>
                 <ScoreBar
-                  score={item.score}
-                  tone={item.priority === "High" ? "danger" : "neon"}
+                  score={item.followupPriorityScore}
+                  tone={
+                    priorityFromScore(item.followupPriorityScore) === "High"
+                      ? "danger"
+                      : "neon"
+                  }
                 />
               </div>
             ))}

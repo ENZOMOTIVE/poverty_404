@@ -6,12 +6,12 @@ import MetricCard from "../components/ui/MetricCard";
 import PageHeader from "../components/ui/PageHeader";
 import Panel from "../components/ui/Panel";
 import ScoreBar from "../components/ui/ScoreBar";
-import { locationMix, monthlyMetrics } from "../data/mafyData";
+import { locationMix } from "../data/mafyData";
 import { useAnalytics } from "../providers/analyticsContext";
 import { formatNumber } from "../utils/format";
 
 export default function OutreachPage() {
-  const { siteMetrics, communeMetrics } = useAnalytics();
+  const { siteMetrics, communeMetrics, monthlyMetrics } = useAnalytics();
   const totalSessions = siteMetrics.reduce((total, site) => total + site.sessions, 0);
   const totalFokontany = siteMetrics.reduce(
     (total, site) => total + site.uniqueFokontany,

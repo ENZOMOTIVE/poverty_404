@@ -1,7 +1,10 @@
 import type {
   AgentRunResponse,
   BackendDatasetSummaryResponse,
-  SimulationResult,
+  DetailedReportResponse,
+  FollowUpOperationsResult,
+  WhatIfForecastResult,
+  WhatIfScenarioId,
 } from "../types/analytics";
 
 const defaultApiBaseUrl = "http://127.0.0.1:8787";
@@ -38,25 +41,77 @@ export function getDatasetSummary(signal?: AbortSignal) {
   );
 }
 
-export async function runFollowUpSimulation(
-  scenario: { unprioritizedAreaId: string; months: number },
+export async function runFollowUpOperations(
+  options: {
+    limit?: number;
+    includeRationale?: boolean;
+  } = {},
   signal?: AbortSignal,
 ) {
-  const response = await apiFetch<AgentRunResponse<SimulationResult>>(
-    "/api/simulations/follow-up",
+  const response = await apiFetch<AgentRunResponse<FollowUpOperationsResult>>(
+    "/api/operations/follow-up",
     {
       method: "POST",
-      body: JSON.stringify({ scenario }),
+      body: JSON.stringify({ options }),
     },
     signal,
   );
-  const simulation = response.results.find(
-    (result) => result.operation === "follow-up-simulation",
+  const operations = response.results.find(
+    (result) => result.operation === "follow-up-operations",
   )?.data;
 
-  if (!simulation) {
-    throw new Error("Simulation response did not include simulation data.");
+  if (!operations) {
+    throw new Error("Operations response did not include action data.");
   }
 
-  return simulation;
+  return operations;
+}
+
+export function generateDetailedReport(
+  options: {
+    limit?: number;
+    includeRationale?: boolean;
+  },
+  signal?: AbortSignal,
+) {
+  return apiFetch<DetailedReportResponse>(
+    "/api/reports/detailed",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        options,
+        language: "en",
+      }),
+    },
+    signal,
+  );
+}
+
+export async function runWhatIfForecast(
+  options: {
+    limit?: number;
+    includeRationale?: boolean;
+    scenarioId?: WhatIfScenarioId;
+    horizonMonths?: number;
+    iterations?: number;
+  } = {},
+  signal?: AbortSignal,
+) {
+  const response = await apiFetch<AgentRunResponse<WhatIfForecastResult>>(
+    "/api/forecast/what-if",
+    {
+      method: "POST",
+      body: JSON.stringify({ options }),
+    },
+    signal,
+  );
+  const forecast = response.results.find(
+    (result) => result.operation === "what-if-forecast",
+  )?.data;
+
+  if (!forecast) {
+    throw new Error("Forecast response did not include what-if data.");
+  }
+
+  return forecast;
 }

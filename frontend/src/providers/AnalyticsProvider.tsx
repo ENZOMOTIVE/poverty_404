@@ -1,11 +1,17 @@
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import {
   communeMetrics as fallbackCommuneMetrics,
+  monthlyMetrics as fallbackMonthlyMetrics,
   siteMetrics as fallbackSiteMetrics,
   sourceSummary as fallbackSummary,
 } from "../data/mafyData";
 import { getDatasetSummary } from "../services/backendApi";
-import type { CommuneMetric, SiteMetric, SourceSummary } from "../types/analytics";
+import type {
+  CommuneMetric,
+  MonthlyMetric,
+  SiteMetric,
+  SourceSummary,
+} from "../types/analytics";
 import {
   AnalyticsContext,
   type AnalyticsContextValue,
@@ -39,6 +45,8 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
     useState<SiteMetric[]>(fallbackSiteMetrics);
   const [communeMetrics, setCommuneMetrics] =
     useState<CommuneMetric[]>(fallbackCommuneMetrics);
+  const [monthlyMetrics, setMonthlyMetrics] =
+    useState<MonthlyMetric[]>(fallbackMonthlyMetrics);
   const [backendStatus, setBackendStatus] =
     useState<BackendStatus>("loading");
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +59,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
         setSummary(data.summary);
         setSiteMetrics(data.topSites);
         setCommuneMetrics(mapCommuneMetrics(data.topCommunes));
+        setMonthlyMetrics(data.monthlyMetrics);
         setBackendStatus("live");
         setError(null);
       })
@@ -69,10 +78,11 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
       summary,
       siteMetrics,
       communeMetrics,
+      monthlyMetrics,
       backendStatus,
       error,
     }),
-    [backendStatus, communeMetrics, error, siteMetrics, summary],
+    [backendStatus, communeMetrics, error, monthlyMetrics, siteMetrics, summary],
   );
 
   return (

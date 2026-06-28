@@ -1,60 +1,48 @@
-# Four Ideas Grounded In The MAFY Sensitisation Dataset
+# Dataset-Grounded Use Cases
 
 Dataset:
 
-`data/SENSIBILISATION_STAFFDFM_MAFY-2026-06-27.xlsx`
+```text
+data/SENSIBILISATION_STAFFDFM_MAFY-2026-06-27.xlsx
+```
 
-These four ideas use only the available outreach/sensitisation fields. The dataset does not contain patient-level facility visits, so facility queueing is handled as a **follow-up queue**, not a real waiting-room queue.
+These use cases are grounded only in the available MAFY sensitisation fields. The workbook supports operational monitoring and follow-up prioritisation. It does not contain patient-level facility visits, consultation timestamps, confirmed diagnoses, lab results, or outcomes.
 
-## 1. Outreach Load Per Facility / Region
+Because of that, the system does not make clinical claims. It helps teams interpret outreach activity, referral signals, operational risk, data quality, and follow-up priorities.
+
+## Summary
+
+| Use case | Question answered |
+| --- | --- |
+| Outreach load | Where is sensitisation activity concentrated? |
+| Referral score | Where are referrals recorded, and where might referral recording need review? |
+| Risk intensity | Which areas combine outreach, referral, theme, and barrier signals? |
+| Follow-up operations | Which communes or sites should field, M&E, or data teams review next? |
+| What-if forecasting | What could happen under a probabilistic planning scenario? |
+
+## 1. Outreach Load
 
 ### Goal
 
-Use the data to understand which facilities, communes, districts, or regions are receiving the most outreach activity and where awareness activities may create future follow-up demand.
+Understand which sites, communes, districts, or regions are receiving the most outreach activity and where follow-up workload may increase.
 
-### Dataset Fields Used
+### Fields Used
 
-- `form.identifiant1.region`
-- `form.identifiant1.district`
-- `form.identifiant1.commune`
-- `form.identifiant1.fokontany`
-- `SITE`
-- `Commune`
-- `form.identifiant1.coordonne_gps`
-- `form.question15.date_activity`
-- `form.question15.start_time`
-- `form.question15.end_time`
-- `MOIS`
-- `PERIODE`
-- `form.activite_de_sensibilisation.location_type`
-- `form.activite_de_sensibilisation.location_name_csb`
-- `form.activite_de_sensibilisation.location_name`
-- `form.question15.staff_responsible`
-- `form.participant.total_participants`
-- `form.participant.men_count`
-- `form.participant.women_count`
+- region, district, commune, fokontany, site
+- activity date, month, period
+- location type and CSB/location name
+- staff responsible
+- total participants, men, women
+- start time, end time, duration
 
 ### Formula
 
-Group by facility, commune, district, region, or month.
-
 ```text
 session_count = count(activity rows)
-
 total_people_reached = sum(total_participants)
-
 unique_fokontany_reached = count_distinct(fokontany)
-
-duration_minutes = end_time - start_time
-
 total_outreach_minutes = sum(duration_minutes)
 
-average_session_size = total_people_reached / session_count
-```
-
-Outreach load score:
-
-```text
 outreach_load_score =
   0.40 * normalized(total_people_reached)
 + 0.25 * normalized(session_count)
@@ -62,127 +50,80 @@ outreach_load_score =
 + 0.15 * normalized(total_outreach_minutes)
 ```
 
-### Output
+### Interpretation
 
-```text
-High outreach load = many people reached, many sessions, broad fokontany coverage, and long total activity time.
-```
-
-This does not prove disease burden. It shows where field activity is concentrated and where follow-up demand may increase.
+High outreach load means many people reached, many sessions, broad fokontany coverage, or longer total activity time. It is a workload and coverage signal, not proof of disease burden.
 
 ## 2. Referral Score
 
 ### Goal
 
-Estimate which facility or commune may receive more people after awareness activities.
+Estimate which communes or sites may need referral follow-up after awareness activities.
 
-### Dataset Fields Used
+### Fields Used
 
-- `form.question_commune_et_personnes_referees_aux_centre_de_sante.referrals_made`
-- `form.question_commune_et_personnes_referees_aux_centre_de_sante.participant_questions_question`
-- `form.question_commune_et_personnes_referees_aux_centre_de_sante.participant_questions`
-- `form.participant.total_participants`
-- `form.activite_de_sensibilisation.location_name_csb`
-- `form.activite_de_sensibilisation.location_type`
-- `form.identifiant1.commune`
-- `form.identifiant1.district`
-- `form.identifiant1.region`
-- `form.observation.dfis`
-- `form.observation.observation`
+- referrals made
+- participant questions
+- observations and difficulty notes
+- total participants
+- location type, CSB name, commune, district, region
 
 ### Formula
 
 ```text
 referral_rate = referrals_made / total_participants
-```
 
-Barrier signal:
-
-```text
 barrier_signal =
-  1 if participant_questions contains cost/access concern
-  1 if observation/dfis mentions cost, access, delay, or difficulty
+  1 if participant questions or observations mention cost, access, delay, or difficulty
   0 otherwise
-```
 
-Referral score:
-
-```text
 referral_score =
   0.45 * normalized(referrals_made)
 + 0.25 * normalized(referral_rate)
 + 0.20 * barrier_signal
 + 0.10 * normalized(total_participants)
-```
 
-Referral gap:
-
-```text
 referral_gap =
-  1 if total_participants is high AND referrals_made = 0
+  1 if total_participants is high and referrals_made = 0
   0 otherwise
 ```
 
-### Output
+### Interpretation
 
-```text
-High referral score = this facility/commune may receive more people after awareness.
+High referral score means referral activity is visible in the workbook. A referral gap means outreach was high but zero referrals were recorded, so teams may need to review whether referrals were not needed, not made, or not recorded.
 
-Referral gap = outreach was high but referrals were zero, so referral recording or referral behavior should be checked.
-```
-
-## 3. Risk Intensity Classification By Area
+## 3. Operational Risk Intensity
 
 ### Goal
 
-Classify each area as low, medium, or high operational risk intensity based on outreach, participant profile, referral activity, and barrier signals.
+Classify areas as low, medium, or high operational risk intensity based on outreach, participant profile, referral activity, themes, and barrier signals.
 
-This is not clinical severity because the dataset does not contain confirmed diagnoses, lab results, or patient outcomes.
+### Fields Used
 
-### Dataset Fields Used
-
-- `form.identifiant1.region`
-- `form.identifiant1.district`
-- `form.identifiant1.commune`
-- `form.identifiant1.fokontany`
-- `form.question16.primary_theme_mafy`
-- `form.participant.type_de_participant`
-- `form.participant.total_participants`
-- `form.question_commune_et_personnes_referees_aux_centre_de_sante.referrals_made`
-- `form.question_commune_et_personnes_referees_aux_centre_de_sante.participant_questions`
-- `form.observation.dfis`
-- `form.observation.succs`
-- `form.activite_de_sensibilisation.location_type`
+- region, district, commune, fokontany
+- primary MAFY theme
+- participant type
+- total participants
+- referrals made
+- participant questions
+- observations and difficulty notes
+- location type
 
 ### Formula
 
-High-risk participant signal:
-
 ```text
 high_risk_group_signal =
-  1 if type_de_participant contains groupe__risque_avc
+  1 if participant type contains high-risk group signal
   0 otherwise
-```
 
-Theme signal:
-
-```text
 theme_signal =
-  1 if primary_theme_mafy includes HTA, AVC symptoms, emergency response, smoking, alcohol, dyslipidemia, or sedentary lifestyle
+  1 if theme includes HTA, AVC symptoms, emergency response, smoking, alcohol, dyslipidemia, or sedentary lifestyle
   0 otherwise
-```
 
-Barrier signal:
-
-```text
 barrier_signal =
-  1 if participant_questions or dfis mentions cost/access/difficulty
+  1 if questions or observations mention cost, access, delay, or difficulty
   0 otherwise
-```
 
-Risk intensity score:
-
-```text
 risk_intensity_score =
   0.30 * normalized(referrals_made)
 + 0.25 * high_risk_group_signal
@@ -191,7 +132,7 @@ risk_intensity_score =
 + 0.10 * normalized(total_participants)
 ```
 
-Classification:
+### Classification
 
 ```text
 0.00 - 0.39 = Low
@@ -199,55 +140,37 @@ Classification:
 0.70 - 1.00 = High
 ```
 
-### Output
+### Interpretation
 
-```text
-High risk intensity = the area combines referral activity, high-risk participant groups, access/cost barriers, and AVC/HTA-related themes.
-```
+High operational risk intensity means an area combines referral activity, high-risk participant groups, access/cost barriers, and AVC/HTA-related themes. It is not a clinical severity score.
 
-## 4. Follow-Up Queueing Model
+## 4. Follow-up Operations
 
 ### Goal
 
-Create a queue of facilities, communes, or activity records for follow-up because the dataset is missing direct priority scores.
+Create a current queue of communes or sites that field, M&E, or data teams should review.
 
-This is not a real facility waiting queue. A real queue would need patient arrival time, consultation time, triage severity, staff availability, and waiting time.
+### Fields Used
 
-### Dataset Fields Used
-
-- `form.activite_de_sensibilisation.location_name_csb`
-- `form.identifiant1.region`
-- `form.identifiant1.district`
-- `form.identifiant1.commune`
-- `form.identifiant1.fokontany`
-- `form.identifiant1.coordonne_gps`
-- `form.question15.date_activity`
-- `MOIS`
-- `form.participant.total_participants`
-- `form.question_commune_et_personnes_referees_aux_centre_de_sante.referrals_made`
-- `form.question_commune_et_personnes_referees_aux_centre_de_sante.participant_questions`
-- `form.observation.dfis`
-- `form.observation.observation`
-- `form.question15.uid_sensibilisation`
-- `form.question15.start_time`
-- `form.question15.end_time`
-- `form.question15.duration_minutes`
+- location and administrative fields
+- GPS presence
+- month and activity date
+- participant totals
+- referrals made
+- participant questions
+- observations and difficulty notes
+- UID
+- start time, end time, duration
 
 ### Formula
-
-Data quality penalty:
 
 ```text
 data_quality_penalty =
   1 if GPS missing
-+ 1 if duplicate uid_sensibilisation
-+ 1 if duration_minutes does not match start_time/end_time
++ 1 if duplicate UID signal exists
++ 1 if duration looks inconsistent
 + 1 if key fields are blank
-```
 
-Follow-up priority score:
-
-```text
 followup_priority_score =
   0.30 * referral_score
 + 0.25 * risk_intensity_score
@@ -256,35 +179,58 @@ followup_priority_score =
 + 0.10 * normalized(data_quality_penalty)
 ```
 
-Queue order:
+### Priority
 
 ```text
-Sort facilities/communes/activity records by followup_priority_score descending.
-```
-
-Priority labels:
-
-```text
-High priority   = score >= 0.70
-Medium priority = score >= 0.40 and < 0.70
-Low priority    = score < 0.40
+High   = score >= 0.70
+Medium = score >= 0.40 and < 0.70
+Low    = score < 0.40
 ```
 
 ### Output
 
-```text
-Follow-up queue item:
-- priority level
-- facility/commune
-- reason for priority
-- supporting dataset fields
-- recommended field action
-```
+Each action can include:
+
+- priority level,
+- commune or site,
+- action type,
+- reason,
+- owner,
+- due window,
+- evidence,
+- blockers.
 
 Example:
 
 ```text
 Priority: High
 Reason: high outreach, referral gap, access/cost questions, and weak GPS data.
-Action: verify referral recording and ask field staff whether an in-person follow-up visit is needed.
+Action: verify referral recording and ask field staff whether follow-up is needed.
 ```
+
+## 5. What-if Forecasting Layer
+
+### Goal
+
+Support planning conversations with clearly labelled probabilistic scenarios. This is the Monte Carlo feature in the What-if page.
+
+### Scenarios
+
+| Scenario | Planning question |
+| --- | --- |
+| Follow-up delay | What may happen if high-priority follow-up areas are not acted on? |
+| Referral backlog | What may happen if referral coordination demand grows faster than teams can close loops? |
+| Data quality drift | What may happen if unresolved data issues continue weakening planning confidence? |
+
+### Method
+
+The forecast agents use historical workbook patterns, current area scores, scenario assumptions, drift, volatility, and seeded Monte Carlo iterations to produce:
+
+- P10, P50, and P90 trajectories,
+- projected movement by area,
+- risk-pressure race frames,
+- scenario rationale.
+
+### Interpretation
+
+What-if forecasting is not a real-world prediction guarantee. It is a planning aid that helps teams discuss possible pressure if a scenario is not prioritized.

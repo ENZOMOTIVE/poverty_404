@@ -1,4 +1,4 @@
-import { Bell, DatabaseZap, Search } from "lucide-react";
+import { DatabaseZap } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { navigationItems } from "../../app/navigation";
 import { useAnalytics } from "../../providers/analyticsContext";
@@ -81,17 +81,11 @@ export default function AppShell() {
                 {summary.sites} sites
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="hidden h-10 min-w-64 items-center gap-2 rounded-md border border-grid bg-panel px-3 text-sm text-muted md:flex">
-                <Search className="size-4" aria-hidden="true" />
-                <span>Search regions, CSBs, communes</span>
-              </div>
-              <button
-                className="grid size-10 place-items-center rounded-md border border-grid bg-panel text-ash transition hover:border-neon/50 hover:text-neon"
-                aria-label="Notifications"
-              >
-                <Bell className="size-4" aria-hidden="true" />
-              </button>
+            <div className="hidden items-center gap-2 rounded-md border border-grid bg-panel px-3 py-2 text-xs font-semibold uppercase text-muted md:flex">
+              <DatabaseZap className="size-4 text-neon" aria-hidden="true" />
+              <span>
+                {backendStatus === "live" ? "Live dataset" : "Cached dataset"}
+              </span>
             </div>
           </div>
           <nav className="flex gap-2 overflow-x-auto border-t border-grid/50 px-4 py-2 thin-scrollbar lg:hidden">

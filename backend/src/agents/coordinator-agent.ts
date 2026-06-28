@@ -6,19 +6,24 @@ import type {
 } from "../types/domain";
 import type { LlmClient } from "../services/llm";
 import { DataQualityAgent } from "./data-quality-agent";
+import { FollowUpOperationsAgent } from "./follow-up-operations-agent";
 import { OutreachAgent } from "./outreach-agent";
 import { ReferralAgent } from "./referral-agent";
 import { ReportAgent } from "./report-agent";
 import { RiskAgent } from "./risk-agent";
-import { SimulationAgent } from "./simulation-agent";
+import { WhatIfForecastAgent } from "./what-if-forecast-agent";
 import type { AgentDependencies, SpecialistAgent } from "./base";
 
-const specialistAgents: SpecialistAgent[] = [
+const reviewAgents: SpecialistAgent[] = [
   new DataQualityAgent(),
   new OutreachAgent(),
   new ReferralAgent(),
   new RiskAgent(),
-  new SimulationAgent(),
+  new FollowUpOperationsAgent(),
+];
+const specialistAgents: SpecialistAgent[] = [
+  ...reviewAgents,
+  new WhatIfForecastAgent(),
 ];
 
 export class CoordinatorAgent {
@@ -50,7 +55,7 @@ export class CoordinatorAgent {
 
   private plan(operation: AgentOperation) {
     if (operation === "full-review") {
-      return specialistAgents.map((agent) => agent.operation);
+      return reviewAgents.map((agent) => agent.operation);
     }
 
     if (operation === "report") {
@@ -59,7 +64,7 @@ export class CoordinatorAgent {
         "outreach-load",
         "referral-score",
         "risk-intensity",
-        "follow-up-simulation",
+        "follow-up-operations",
       ] satisfies AgentOperation[];
     }
 

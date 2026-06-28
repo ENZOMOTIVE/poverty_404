@@ -4,6 +4,7 @@ import type {
   AgentContext,
   AreaMetric,
   DatasetSummary,
+  MonthlyMetric,
   SensitisationRecord,
 } from "../types/domain";
 import {
@@ -290,6 +291,39 @@ function aggregateGroups(
     .sort((a, b) => b.followupPriorityScore - a.followupPriorityScore);
 }
 
+function buildMonthlyMetrics(
+  records: SensitisationRecord[],
+  duplicateUids: Set<string>,
+): MonthlyMetric[] {
+  const monthOrder = new Map<string, number>();
+
+  records.forEach((record) => {
+    if (!monthOrder.has(record.month)) {
+      monthOrder.set(record.month, monthOrder.size);
+    }
+  });
+
+  return aggregateGroups(
+    groupBy(records, (record) => record.month),
+    duplicateUids,
+  )
+    .sort(
+      (first, second) =>
+        (monthOrder.get(first.name) ?? 0) - (monthOrder.get(second.name) ?? 0),
+    )
+    .map((metric) => ({
+      month: metric.name,
+      sessions: metric.sessions,
+      participants: metric.participants,
+      referrals: metric.referrals,
+      uniqueFokontany: metric.uniqueFokontany,
+      outreachLoadScore: metric.outreachLoadScore,
+      referralScore: metric.referralScore,
+      riskIntensityScore: metric.riskIntensityScore,
+      followupPriorityScore: metric.followupPriorityScore,
+    }));
+}
+
 export function loadAgentContext(datasetPath: string): AgentContext {
   const resolvedPath = resolve(import.meta.dir, "../../", datasetPath);
   const workbook = readFile(resolvedPath);
@@ -319,11 +353,13 @@ export function loadAgentContext(datasetPath: string): AgentContext {
     groupBy(records, (record) => record.commune),
     duplicateUids,
   );
+  const monthlyMetrics = buildMonthlyMetrics(records, duplicateUids);
 
   return {
     records,
     summary: buildSummary(datasetPath, records, Object.keys(firstRow).length),
     siteMetrics,
     communeMetrics,
+    monthlyMetrics,
   };
 }

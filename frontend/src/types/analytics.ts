@@ -85,42 +85,200 @@ export interface BackendDatasetSummaryResponse {
       referralRate?: number;
     }
   >;
+  monthlyMetrics: MonthlyMetric[];
 }
 
-export interface SimulationMonth {
-  month: string;
+export interface AgentFinding {
+  title: string;
+  severity: PriorityLevel;
+  evidence: string[];
+  recommendation: string;
+}
+
+export type FollowUpActionType =
+  | "Referral recording audit"
+  | "Data quality cleanup"
+  | "CSB follow-up coordination"
+  | "Outreach load review";
+
+export interface OperationsAgentStep {
+  agent: string;
+  decision: string;
+  evidence: string[];
+}
+
+export interface FollowUpAction {
+  id: string;
   areaId: string;
   areaName: string;
-  pressureIndex: number;
+  region: string;
+  district: string;
   priority: PriorityLevel;
-  projectedPeopleExposed: number;
+  score: number;
+  actionType: FollowUpActionType;
+  action: string;
+  owner: string;
+  dueWindow: string;
+  status: "Ready for field review";
+  reason: string;
+  evidence: string[];
+  blockers: string[];
+  metrics: {
+    participants: number;
+    sessions: number;
+    referrals: number;
+    referralGaps: number;
+    dataQualityPenalty: number;
+    highRiskSessions: number;
+    outreachLoadScore: number;
+    referralScore: number;
+    riskIntensityScore: number;
+    followupPriorityScore: number;
+  };
 }
 
-export interface SimulationResult {
-  unprioritizedAreaId: string;
-  months: number;
-  timeline: SimulationMonth[];
-  finalRanking: SimulationMonth[];
-  narrative: string;
+export interface OperationsRationale {
+  mode: "rules" | "llm-assisted";
+  summary: string;
+  agentSteps: OperationsAgentStep[];
+  llmSummary?: string;
+}
+
+export interface FollowUpOperationsResult {
+  generatedAt: string;
+  subAgents: string[];
+  summary: string;
+  actions: FollowUpAction[];
+  rationale?: OperationsRationale;
+}
+
+export type WhatIfScenarioId =
+  | "followup-delay"
+  | "referral-backlog"
+  | "data-quality-drift";
+
+export interface WhatIfScenarioConfig {
+  id: WhatIfScenarioId;
+  label: string;
+  description: string;
+  assumptions: string[];
+}
+
+export interface WhatIfForecastPoint {
+  monthIndex: number;
+  label: string;
+  baseline: number;
+  p10: number;
+  p50: number;
+  p90: number;
+}
+
+export interface WhatIfAreaForecast {
+  areaId: string;
+  areaName: string;
+  region: string;
+  district: string;
+  currentScore: number;
+  projectedMedian: number;
+  projectedP90: number;
+  riskDelta: number;
+  volatility: number;
+  rank: number;
+  drivers: string[];
+  trajectory: WhatIfForecastPoint[];
+}
+
+export interface WhatIfRaceStanding {
+  areaId: string;
+  areaName: string;
+  region: string;
+  value: number;
+  delta: number;
+  rank: number;
+}
+
+export interface WhatIfRaceFrame {
+  monthIndex: number;
+  label: string;
+  standings: WhatIfRaceStanding[];
+}
+
+export interface WhatIfRationale {
+  mode: "rules" | "llm-assisted";
+  summary: string;
+  agentSteps: OperationsAgentStep[];
+  llmSummary?: string;
+}
+
+export interface WhatIfForecastResult {
+  generatedAt: string;
+  scenario: WhatIfScenarioConfig;
+  horizonMonths: number;
+  iterations: number;
+  subAgents: string[];
+  summary: string;
+  areas: WhatIfAreaForecast[];
+  raceFrames: WhatIfRaceFrame[];
+  rationale?: WhatIfRationale;
+}
+
+export interface AgentResult<T = unknown> {
+  agent: string;
+  operation: string;
+  summary: string;
+  findings: AgentFinding[];
+  data: T;
+  usedLLM: boolean;
+}
+
+export interface DetailedReport {
+  generatedAt: string;
+  title: string;
+  dataset: SourceSummary;
+  executiveSummary: string;
+  usedLLM: boolean;
+  sourceAgents: string[];
+  agentResults: AgentResult[];
+  siteMetrics: SiteMetric[];
+  communeMetrics: Array<
+    CommuneMetric & {
+      totalOutreachMinutes?: number;
+      highRiskSessions?: number;
+      themeSessions?: number;
+      dataQualityPenalty?: number;
+      referralRate?: number;
+    }
+  >;
+  monthlyMetrics: MonthlyMetric[];
+  operations: FollowUpOperationsResult | undefined;
+  chartData: {
+    monthlyActivity: MonthlyMetric[];
+    siteScores: SiteMetric[];
+    communeQueue: Array<
+      CommuneMetric & {
+        totalOutreachMinutes?: number;
+        highRiskSessions?: number;
+        themeSessions?: number;
+        dataQualityPenalty?: number;
+        referralRate?: number;
+      }
+    >;
+    operationsQueue: FollowUpAction[];
+  };
+}
+
+export interface DetailedReportResponse {
+  coordinator: string;
+  operation: "detailed-report";
+  plan: string[];
+  report: DetailedReport;
 }
 
 export interface AgentRunResponse<T = unknown> {
   coordinator: string;
   operation: string;
   plan: string[];
-  results: Array<{
-    agent: string;
-    operation: string;
-    summary: string;
-    findings: Array<{
-      title: string;
-      severity: PriorityLevel;
-      evidence: string[];
-      recommendation: string;
-    }>;
-    data: T;
-    usedLLM: boolean;
-  }>;
+  results: Array<AgentResult<T>>;
 }
 
 export interface LocationMix {

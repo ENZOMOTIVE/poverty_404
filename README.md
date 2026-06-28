@@ -1,167 +1,127 @@
-# Doctors for Madagascar MAFY Monitoring Console
+# MAFY Data Console
 
-A practical monitoring and evaluation dashboard for turning MAFY sensitisation data into clear outreach, referral, risk, and follow-up insights.
+An AI-supported monitoring and evaluation console for Doctors for Madagascar. The project turns an anonymized MAFY sensitisation workbook into operational insight: outreach load, referral signals, data quality issues, follow-up actions, downloadable reports, and Monte Carlo what-if forecasts.
 
-This project is built around the Doctors for Madagascar MAFY outreach dataset:
+Built for an AI4Good Hackathon context, the goal is practical: help project, field, and M&E teams understand where attention is needed without pretending the dataset is clinical diagnosis data.
 
-```text
-data/SENSIBILISATION_STAFFDFM_MAFY-2026-06-27.xlsx
+## Why It Matters
+
+Doctors for Madagascar works with monitoring and evaluation data that can support project steering, reporting, quality improvement, research, and internal learning. Raw exports are useful, but reviewing them manually is slow and requires both technical skill and field context.
+
+This console helps teams move from spreadsheet rows to action:
+
+- Which communes or sites had the most outreach activity?
+- Where are referrals recorded, and where might referral recording need review?
+- Which areas combine outreach pressure, risk signals, and data quality issues?
+- What follow-up actions should field, M&E, and data teams review next?
+- What could happen under a clearly labelled probabilistic what-if scenario?
+
+## Product Snapshot
+
+| Layer | What it does |
+| --- | --- |
+| Frontend | Multi-page React console with charts, operations views, report downloads, what-if forecasting, and a one-time 3D Madagascar landing screen. |
+| Backend | Bun API that loads the workbook, anonymizes sensitive fields, runs agent workflows, and returns structured operation/report/forecast payloads. |
+| Agents | Coordinator plus specialist agents for data quality, outreach, referrals, risk, follow-up operations, reporting, and Monte Carlo what-if forecasting. |
+| Dataset | `data/SENSIBILISATION_STAFFDFM_MAFY-2026-06-27.xlsx` |
+
+## Architecture
+
+```mermaid
+flowchart LR
+  A[MAFY workbook] --> B[Workbook loader]
+  B --> C[Anonymization layer]
+  C --> D[CoordinatorAgent]
+
+  D --> E[DataQualityAgent]
+  D --> F[OutreachAgent]
+  D --> G[ReferralAgent]
+  D --> H[RiskAgent]
+  D --> I[FollowUpOperationsAgent]
+  D --> J[WhatIfForecastAgent]
+  D --> K[ReportAgent]
+
+  I --> I1[OperationsTriageAgent]
+  I --> I2[OperationsRationaleAgent]
+
+  J --> J1[MonteCarloParameterAgent]
+  J --> J2[ScenarioMonteCarloAgent]
+  J --> J3[ForecastRationaleAgent]
+
+  D --> L[Bun API]
+  L --> M[React console]
+  M --> N[Charts, action queues, reports, forecast race]
 ```
 
-The application is a React/Vite frontend that presents four data use cases defined in [`FOUR_DATA_USECASES.md`](FOUR_DATA_USECASES.md). These use cases help project and M&E teams understand where outreach is happening, where referrals may require attention, which areas show higher operational risk signals, and which facilities or communes should be prioritised for follow-up.
+For a focused agentic infrastructure view, see [`docs/AGENTIC_INFRASTRUCTURE.md`](docs/AGENTIC_INFRASTRUCTURE.md).
 
-## Contents
+## Current Capabilities
 
-- [Project Overview](#project-overview)
-- [Dataset Scope](#dataset-scope)
-- [Core Use Cases](#core-use-cases)
-- [Application Views](#application-views)
-- [Data Summary](#data-summary)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Method Notes](#method-notes)
-
-## Project Overview
-
-Doctors for Madagascar collects monitoring and evaluation data that can support project steering, reporting, quality improvement, and internal learning. However, raw data often requires time-consuming review before it becomes useful for decision-making.
-
-This console helps transform the MAFY sensitisation workbook into practical monitoring signals:
-
-| Area | Purpose |
+| Capability | Description |
 | --- | --- |
-| Outreach | Understand where field activity is concentrated |
-| Referrals | Identify referral activity and possible referral gaps |
-| Risk | Classify operational risk intensity by area |
-| Follow-up | Prioritise facilities, communes, or activity records for review |
-| Quality | Surface data issues that may affect interpretation |
+| Dataset summary | Live workbook metrics for participants, referrals, regions, sites, months, GPS gaps, and duplicate UID signals. |
+| Operations actions | Assignable follow-up actions with owners, due windows, evidence, blockers, and optional rationale. |
+| What-if forecasting | Seeded Monte Carlo scenario forecasts with animated trajectory and risk-pressure race views. |
+| Report generation | Downloadable HTML, JSON, and CSV reports generated from backend report payloads. |
+| Anonymization | Removes or minimizes direct identifiers before LLM-facing payloads or external export. |
+| Landing experience | One-time Three.js globe focused on Madagascar, then the user enters the monitoring console. |
 
-## Dataset Scope
+## Frontend Views
 
-The workbook contains outreach and sensitisation activity records, including location fields, activity timing, participants reached, referral counts, participant questions, observations, themes, and data quality signals.
-
-It does not contain:
-
-- Patient-level facility visits
-- Waiting-room or consultation timestamps
-- Triage severity
-- Staff availability
-- Confirmed diagnoses
-- Lab results
-- Patient outcomes
-
-Because of this, the project focuses on monitoring and follow-up prioritisation. It does not make clinical diagnoses or prove disease burden.
-
-## Core Use Cases
-
-### 1. Outreach Load Per Facility / Region
-
-Measures where outreach activity is concentrated across facilities, communes, districts, regions, fokontany, and months.
-
-| Signal | Description |
+| View | Purpose |
 | --- | --- |
-| Session count | Number of recorded outreach activities |
-| People reached | Total participants reached |
-| Coverage | Number of unique fokontany reached |
-| Outreach time | Total activity duration |
-| Average session size | Participants reached per session |
+| Overview | High-level reach, referral, quality, monthly activity, and priority score summary. |
+| Outreach | Outreach load and geographic activity patterns. |
+| Referrals | Referral score, referral rate, and referral gap signals. |
+| Risk | Operational risk intensity by area. |
+| Operations | Current backend-generated follow-up actions and rationale. |
+| What-if | Monte Carlo scenario forecasts and animated pressure race. |
+| Reports | Agent-generated downloadable HTML, JSON, and CSV reports. |
+| Quality | Data issues that affect interpretation and follow-up reliability. |
+| Scores | Score components and weighting logic. |
 
-The outreach load score highlights where field activity is strongest and where follow-up demand may increase.
+## Agentic Workflows
 
-### 2. Referral Score
+The backend runs deterministic dataset scoring for operational actions. If `OPENAI_API_KEY` is configured, LLM assistance is used for narrative rationale and report language from anonymized aggregate payloads.
 
-Estimates which facilities or communes may receive more people after awareness activities.
+| Workflow | Endpoint | Output |
+| --- | --- | --- |
+| Dataset summary | `GET /api/dataset/summary` | Workbook metrics and chart data. |
+| Follow-up operations | `POST /api/operations/follow-up` | Field-ready actions with evidence and rationale. |
+| What-if forecast | `POST /api/forecast/what-if` | Monte Carlo trajectories, race frames, and scenario explanation. |
+| Detailed report | `POST /api/reports/detailed` | Structured report payload for HTML, JSON, and CSV downloads. |
+| Full agent run | `POST /api/agents/run` | Coordinator-run specialist outputs. |
 
-| Signal | Description |
-| --- | --- |
-| Referrals made | Number of people referred |
-| Referral rate | Referrals relative to participants reached |
-| Barrier signal | Cost, access, delay, or difficulty mentioned in questions or observations |
-| Participant volume | Total people reached |
+## Responsible AI Boundaries
 
-The referral score highlights strong referral activity. It also supports referral gap detection when high outreach activity produces zero recorded referrals.
+This project does not make clinical diagnoses, patient-level triage decisions, or claims about confirmed disease burden.
 
-### 3. Risk Intensity Classification By Area
+The workbook does not contain patient-level facility visits, consultation timestamps, lab results, confirmed diagnoses, or health outcomes. The console therefore focuses on monitoring, operational prioritisation, data quality, scenario planning, and reporting support.
 
-Classifies areas as low, medium, or high operational risk intensity based on outreach, referral, participant, theme, and barrier signals.
-
-| Signal | Description |
-| --- | --- |
-| Referral activity | Referrals recorded in the area |
-| High-risk group signal | Participant type indicates a higher-risk group |
-| Theme signal | AVC, HTA, emergency response, smoking, alcohol, dyslipidemia, or sedentary lifestyle themes |
-| Barrier signal | Cost, access, delay, or difficulty mentioned |
-| Participant volume | Total people reached |
-
-This is an operational classification, not a clinical severity score.
-
-### 4. Follow-Up Queueing Model
-
-Creates a priority queue for facilities, communes, or activity records that may require review.
-
-| Component | Weight |
-| --- | ---: |
-| Referral score | 30% |
-| Risk intensity score | 25% |
-| Outreach load score | 20% |
-| Referral gap | 15% |
-| Data quality penalty | 10% |
-
-Priority labels:
-
-| Score Range | Priority |
-| --- | --- |
-| `>= 0.70` | High |
-| `>= 0.40` and `< 0.70` | Medium |
-| `< 0.40` | Low |
-
-Each queue item can include the priority level, facility or commune, reason for priority, supporting data fields, and a recommended field action.
-
-## Application Views
-
-The frontend includes the following screens:
-
-| View | Description |
-| --- | --- |
-| Overview | High-level project and dataset summary |
-| Outreach | Outreach load and geographic activity patterns |
-| Referrals | Referral score, referral rate, and referral gaps |
-| Risk | Operational risk intensity by site or area |
-| Simulation | Scenario-style exploration of monitoring scores |
-| Queue | Prioritised follow-up actions |
-| Quality | Missing GPS, duplicate UID rows, and other quality signals |
-| Scores | Score components and weighting logic |
-
-## Data Summary
-
-The static frontend fixtures currently summarise the dataset as follows:
-
-| Metric | Value |
-| --- | ---: |
-| Activity rows | 71 |
-| Columns | 90 |
-| Participants | 2,891 |
-| Men | 1,062 |
-| Women | 1,829 |
-| Referrals | 63 |
-| Regions | 2 |
-| Sites | 3 |
-| Months | 6 |
-| Rows missing GPS | 42 |
-| Duplicate UID rows | 30 |
+Monte Carlo what-if outputs are labelled as probabilistic planning aids. They are not guarantees and should be reviewed alongside field context.
 
 ## Project Structure
 
 ```text
-data/                  Source MAFY sensitisation workbook
-docs/                  Supporting project documents
-frontend/              React/Vite application
-FOUR_DATA_USECASES.md  Detailed use-case definitions, fields, and formulas
-README.md              Project overview
+backend/                 Bun API and agent workflows
+data/                    Source workbook and generated anonymized outputs
+docs/                    Architecture and operations documentation
+frontend/                React/Vite/Tailwind console
+FOUR_DATA_USECASES.md    Dataset-grounded scoring use cases
+README.md                Hackathon-facing project overview
 ```
 
 ## Getting Started
 
-Run the frontend from the `frontend` directory:
+Install and run the backend:
+
+```bash
+cd backend
+bun install
+bun run dev
+```
+
+Install and run the frontend:
 
 ```bash
 cd frontend
@@ -169,22 +129,37 @@ npm install
 npm run dev
 ```
 
-Additional commands:
-
-```bash
-npm run build
-npm run lint
-npm run preview
-```
-
-## Method Notes
-
-The full formulas, dataset fields, and score definitions are documented in [`FOUR_DATA_USECASES.md`](FOUR_DATA_USECASES.md).
-
-The current frontend uses static derived fixtures in:
+Default local URLs:
 
 ```text
-frontend/src/data/mafyData.ts
+Frontend: http://127.0.0.1:5173
+Backend:  http://127.0.0.1:8787
 ```
 
-Scores should be interpreted as monitoring and follow-up prioritisation signals. They are not clinical diagnoses, patient-level triage scores, or proof of disease burden.
+Optional backend environment:
+
+```text
+PORT=8787
+CORS_ORIGIN=http://127.0.0.1:5173
+DATASET_PATH=../data/SENSIBILISATION_STAFFDFM_MAFY-2026-06-27.xlsx
+OPENAI_API_KEY=your_key_here
+OPENAI_MODEL=gpt-4.1-mini
+```
+
+## Validation
+
+Useful checks:
+
+```bash
+cd backend && bun run typecheck
+cd frontend && npm run lint
+cd frontend && npm run build
+```
+
+## Documentation
+
+- [`docs/AGENTIC_INFRASTRUCTURE.md`](docs/AGENTIC_INFRASTRUCTURE.md): agent architecture, workflows, and Mermaid diagrams.
+- [`docs/OPERATIONS_OVERVIEW.md`](docs/OPERATIONS_OVERVIEW.md): brief operations workflow overview.
+- [`FOUR_DATA_USECASES.md`](FOUR_DATA_USECASES.md): dataset-grounded scoring and use-case definitions.
+- [`backend/README.md`](backend/README.md): backend commands, API routes, and anonymization notes.
+- [`frontend/README.md`](frontend/README.md): frontend structure, commands, and integration notes.

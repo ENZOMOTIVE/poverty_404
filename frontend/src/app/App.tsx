@@ -2,11 +2,14 @@ import { lazy, Suspense, type ReactNode } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import AppShell from "../components/layout/AppShell";
 
+const LandingGate = lazy(() => import("../components/landing/LandingGate"));
 const DashboardPage = lazy(() => import("../pages/DashboardPage"));
 const OutreachPage = lazy(() => import("../pages/OutreachPage"));
 const ReferralsPage = lazy(() => import("../pages/ReferralsPage"));
 const RiskPage = lazy(() => import("../pages/RiskPage"));
-const SimulationPage = lazy(() => import("../pages/SimulationPage"));
+const OperationsPage = lazy(() => import("../pages/OperationsPage"));
+const ForecastPage = lazy(() => import("../pages/ForecastPage"));
+const ReportsPage = lazy(() => import("../pages/ReportsPage"));
 const QueuePage = lazy(() => import("../pages/QueuePage"));
 const QualityPage = lazy(() => import("../pages/QualityPage"));
 const ScoresPage = lazy(() => import("../pages/ScoresPage"));
@@ -30,18 +33,24 @@ function page(node: ReactNode) {
 
 export default function App() {
   return (
-    <Routes>
-      <Route element={<AppShell />}>
-        <Route index element={page(<DashboardPage />)} />
-        <Route path="outreach" element={page(<OutreachPage />)} />
-        <Route path="referrals" element={page(<ReferralsPage />)} />
-        <Route path="risk" element={page(<RiskPage />)} />
-        <Route path="simulation" element={page(<SimulationPage />)} />
-        <Route path="queue" element={page(<QueuePage />)} />
-        <Route path="quality" element={page(<QualityPage />)} />
-        <Route path="scores" element={page(<ScoresPage />)} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Route>
-    </Routes>
+    <Suspense fallback={<RouteFallback />}>
+      <LandingGate>
+        <Routes>
+          <Route element={<AppShell />}>
+            <Route index element={page(<DashboardPage />)} />
+            <Route path="outreach" element={page(<OutreachPage />)} />
+            <Route path="referrals" element={page(<ReferralsPage />)} />
+            <Route path="risk" element={page(<RiskPage />)} />
+            <Route path="operations" element={page(<OperationsPage />)} />
+            <Route path="forecast" element={page(<ForecastPage />)} />
+            <Route path="reports" element={page(<ReportsPage />)} />
+            <Route path="queue" element={page(<QueuePage />)} />
+            <Route path="quality" element={page(<QualityPage />)} />
+            <Route path="scores" element={page(<ScoresPage />)} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </LandingGate>
+    </Suspense>
   );
 }

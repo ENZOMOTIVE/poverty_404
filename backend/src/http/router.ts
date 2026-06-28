@@ -1,6 +1,7 @@
 import type { EnvConfig } from "../config/env";
 import { CoordinatorAgent } from "../agents/coordinator-agent";
 import { anonymizeRecords } from "../services/anonymization";
+import { buildDetailedReport } from "../services/detailed-report";
 import { createLlmClient } from "../services/llm";
 import { loadAgentContext } from "../services/workbook";
 import type { AgentRequest } from "../types/domain";
@@ -12,7 +13,8 @@ const supportedOperations = new Set<AgentRequest["operation"]>([
   "outreach-load",
   "referral-score",
   "risk-intensity",
-  "follow-up-simulation",
+  "follow-up-operations",
+  "what-if-forecast",
   "report",
 ]);
 
@@ -33,7 +35,7 @@ function validateAgentRequest(body: Partial<AgentRequest>): AgentRequest {
 
   return {
     operation: body.operation,
-    scenario: body.scenario,
+    options: body.options,
     language: body.language ?? "en",
   };
 }
@@ -79,6 +81,7 @@ export async function route(request: Request, config: EnvConfig) {
           summary: context.summary,
           topSites: context.siteMetrics.slice(0, 5),
           topCommunes: context.communeMetrics.slice(0, 10),
+          monthlyMetrics: context.monthlyMetrics,
         },
         {},
         config,
@@ -112,19 +115,62 @@ export async function route(request: Request, config: EnvConfig) {
       return jsonResponse(output, {}, config);
     }
 
-    if (
-      request.method === "POST" &&
-      url.pathname === "/api/simulations/follow-up"
-    ) {
+    if (request.method === "POST" && url.pathname === "/api/operations/follow-up") {
       const body = await readJson<Partial<AgentRequest>>(request);
       const context = loadAgentContext(config.datasetPath);
       const output = await coordinator.run(context, {
-        operation: "follow-up-simulation",
-        scenario: body.scenario,
+        operation: "follow-up-operations",
+        options: {
+          limit: body.options?.limit ?? 12,
+          includeRationale: body.options?.includeRationale ?? true,
+        },
         language: body.language ?? "en",
       });
 
       return jsonResponse(output, {}, config);
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/forecast/what-if") {
+      const body = await readJson<Partial<AgentRequest>>(request);
+      const context = loadAgentContext(config.datasetPath);
+      const output = await coordinator.run(context, {
+        operation: "what-if-forecast",
+        options: {
+          limit: body.options?.limit ?? 6,
+          includeRationale: body.options?.includeRationale ?? true,
+          scenarioId: body.options?.scenarioId ?? "followup-delay",
+          horizonMonths: body.options?.horizonMonths ?? 6,
+          iterations: body.options?.iterations ?? 1200,
+        },
+        language: body.language ?? "en",
+      });
+
+      return jsonResponse(output, {}, config);
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/reports/detailed") {
+      const body = await readJson<Partial<AgentRequest>>(request);
+      const context = loadAgentContext(config.datasetPath);
+      const output = await coordinator.run(context, {
+        operation: "report",
+        options: {
+          limit: body.options?.limit ?? 12,
+          includeRationale: body.options?.includeRationale ?? true,
+        },
+        language: body.language ?? "en",
+      });
+      const report = buildDetailedReport(context, output.results);
+
+      return jsonResponse(
+        {
+          coordinator: output.coordinator,
+          operation: "detailed-report",
+          plan: output.plan,
+          report,
+        },
+        {},
+        config,
+      );
     }
 
     return errorResponse("Route not found.", 404, config, {

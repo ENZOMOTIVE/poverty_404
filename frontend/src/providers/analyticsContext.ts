@@ -1,6 +1,7 @@
 import { createContext, useContext } from "react";
 import type {
   CommuneMetric,
+  MonthlyMetric,
   SiteMetric,
   SourceSummary,
 } from "../types/analytics";
@@ -11,6 +12,7 @@ export interface AnalyticsContextValue {
   summary: SourceSummary;
   siteMetrics: SiteMetric[];
   communeMetrics: CommuneMetric[];
+  monthlyMetrics: MonthlyMetric[];
   backendStatus: BackendStatus;
   error: string | null;
 }
