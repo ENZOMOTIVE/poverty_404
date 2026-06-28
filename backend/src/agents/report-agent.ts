@@ -28,24 +28,34 @@ export class ReportAgent implements SpecialistAgent<ReportData> {
     let usedLLM = false;
 
     if (dependencies.llm.enabled) {
-      executiveSummary = await dependencies.llm.complete([
-        {
-          role: "system",
-          content:
-            "You are an M&E data assistant for Doctors for Madagascar. Summarize deterministic findings. Do not invent clinical diagnoses. Keep recommendations operational and concise.",
-        },
-        {
-          role: "user",
-          content: JSON.stringify(
-            buildLlmSafePayload(
-              context,
-              this.sourceResults,
-              request.language ?? "en",
+      try {
+        const llmSummary = await dependencies.llm.complete([
+          {
+            role: "system",
+            content:
+              "You are an M&E data assistant for Doctors for Madagascar. Summarize deterministic findings. Do not invent clinical diagnoses. Keep recommendations operational and concise.",
+          },
+          {
+            role: "user",
+            content: JSON.stringify(
+              buildLlmSafePayload(
+                context,
+                this.sourceResults,
+                request.language ?? "en",
+              ),
             ),
-          ),
-        },
-      ]);
-      usedLLM = executiveSummary.length > 0;
+          },
+        ]);
+        const trimmedSummary = llmSummary.trim();
+
+        if (trimmedSummary.length > 0) {
+          executiveSummary = trimmedSummary;
+          usedLLM = true;
+        }
+      } catch {
+        executiveSummary = deterministicSummary;
+        usedLLM = false;
+      }
     }
 
     return result(

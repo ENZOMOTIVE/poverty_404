@@ -42,8 +42,7 @@ class OpenAiResponsesClient implements LlmClient {
     });
 
     if (!response.ok) {
-      const details = await response.text();
-      throw new Error(`LLM request failed: ${response.status} ${details}`);
+      throw new Error(`LLM request failed with status ${response.status}.`);
     }
 
     const payload = (await response.json()) as {
