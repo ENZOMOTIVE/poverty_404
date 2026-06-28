@@ -218,15 +218,15 @@ export default function LandingGate({ children }: LandingGateProps) {
         <div className="max-w-3xl">
           <div className="mb-5 inline-flex items-center gap-2 rounded-md border border-grid bg-ink/70 px-3 py-2 text-xs font-semibold uppercase text-neon backdrop-blur">
             <Globe2 className="size-4" aria-hidden="true" />
-            Doctors for Madagascar · MAFY
+            MAFY health operations
           </div>
           <h1 className="max-w-2xl text-5xl font-semibold leading-[1.02] text-white sm:text-6xl lg:text-7xl">
-            MAFY Data Console
+            MAFY Health Operations Console
           </h1>
           <p className="mt-6 max-w-2xl text-base leading-7 text-ash sm:text-lg">
-            Start from the anonymized sensitisation workbook: where sessions
-            happened, where referrals were recorded, where data quality weakens
-            follow-up, and where scenario pressure could rise next.
+            A field-ready view of the anonymized MAFY workbook: where outreach
+            happened, where referrals need review, which records weaken
+            confidence, and which areas may need attention next.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <button
@@ -234,12 +234,12 @@ export default function LandingGate({ children }: LandingGateProps) {
               onClick={startConsole}
               className="inline-flex h-12 items-center gap-2 rounded-md border border-neon bg-neon px-5 text-sm font-semibold text-ink shadow-neon transition hover:bg-neon/85"
             >
-              Open monitoring console
+              Open MAFY console
               <ArrowRight className="size-4" aria-hidden="true" />
             </button>
             <div className="inline-flex h-12 items-center gap-2 rounded-md border border-grid bg-ink/70 px-4 text-xs font-semibold uppercase text-muted backdrop-blur">
               <DatabaseZap className="size-4 text-neon" aria-hidden="true" />
-              Workbook-backed operations
+              For field and M&E teams
             </div>
           </div>
         </div>

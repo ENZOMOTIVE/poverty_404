@@ -67,7 +67,7 @@ export default function OperationsPage() {
         setError(
           caught instanceof Error
             ? caught.message
-            : "Operations backend unavailable",
+            : "MAFY follow-up agents unavailable",
         );
       });
 
@@ -130,14 +130,14 @@ export default function OperationsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Agentic operations"
-        title="Follow-up operations"
-        description="Current workbook evidence is converted into assignable follow-up actions for field, M&E, and data teams."
+        kicker="MAFY action planning"
+        title="MAFY follow-up operations"
+        description="Current MAFY evidence is converted into assignable follow-up actions for field coordinators, M&E teams, and data managers."
       >
         <div className="flex items-center gap-2 rounded-md border border-neon/40 bg-neon/10 px-3 py-2 text-neon">
           <DatabaseZap className="size-4" aria-hidden="true" />
           <span className="text-xs font-semibold uppercase">
-            {backendStatus === "live" ? "Operations backend live" : "Backend required"}
+            {backendStatus === "live" ? "MAFY agents live" : "MAFY agents required"}
           </span>
         </div>
       </PageHeader>
@@ -187,7 +187,7 @@ export default function OperationsPage() {
               )}
             >
               <BrainCircuit className="size-4" aria-hidden="true" />
-              Agent rationale
+              Explain decisions
             </button>
           </div>
         </div>
@@ -196,15 +196,15 @@ export default function OperationsPage() {
       {status === "error" && (
         <Panel contentClassName="py-3">
           <p className="text-sm text-danger">
-            Follow-up operations API unavailable. {error}
+            MAFY follow-up agents unavailable. {error}
           </p>
         </Panel>
       )}
 
       {includeRationale && operations?.rationale && (
         <Panel
-          title="Agent rationale"
-          subtitle={`Mode: ${operations.rationale.mode === "llm-assisted" ? "LLM-assisted" : "rules"}`}
+          title="MAFY rationale"
+          subtitle={`Mode: ${operations.rationale.mode === "llm-assisted" ? "AI-assisted" : "dataset rules"}`}
         >
           <p className="text-sm leading-6 text-ash">
             {operations.rationale.summary}

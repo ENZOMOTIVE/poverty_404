@@ -1,6 +1,6 @@
-# Agentic Infrastructure
+# MAFY Agentic Infrastructure
 
-This document summarizes how the MAFY Data Console uses agents to turn an anonymized sensitisation workbook into operational decisions, scenario forecasts, and downloadable reports.
+This document summarizes how MAFY uses agents to turn an anonymized sensitisation workbook into follow-up actions, scenario planning, and downloadable health operations reports.
 
 The design goal is not to make the AI invent answers. The agents are grounded in workbook-derived metrics, deterministic scoring, anonymized aggregate payloads, and clear operational boundaries.
 
@@ -8,8 +8,8 @@ The design goal is not to make the AI invent answers. The agents are grounded in
 
 ```mermaid
 flowchart TB
-  U[Project, field, and M&E users] --> F[React MAFY Console]
-  F --> API[Bun API]
+  U[Field, healthcare, programme, and M&E users] --> F[MAFY Health Operations Console]
+  F --> API[MAFY Agent Service]
 
   API --> W[Workbook Loader]
   W --> A[Anonymization Layer]
@@ -42,7 +42,7 @@ flowchart TB
 
 | Agent | Role | Output |
 | --- | --- | --- |
-| `CoordinatorAgent` | Selects and runs the required specialist workflow. | Plans, ordered agent results, structured response payloads. |
+| `CoordinatorAgent` | Selects and runs the required MAFY specialist workflow. | Plans, ordered agent results, structured response payloads. |
 | `DataQualityAgent` | Reviews missing GPS, duplicate UID, and reliability signals. | Data quality findings and recommendations. |
 | `OutreachAgent` | Measures outreach concentration and field activity load. | Outreach load metrics and findings. |
 | `ReferralAgent` | Reviews referral activity and possible referral gaps. | Referral score findings and recommendations. |
@@ -56,7 +56,7 @@ flowchart TB
 ```mermaid
 sequenceDiagram
   participant UI as Operations Page
-  participant API as Bun API
+  participant API as MAFY Agent Service
   participant C as CoordinatorAgent
   participant T as OperationsTriageAgent
   participant R as OperationsRationaleAgent
@@ -84,7 +84,7 @@ The operations workflow is used for real current actions. It does not simulate t
 ```mermaid
 sequenceDiagram
   participant UI as What-if Page
-  participant API as Bun API
+  participant API as MAFY Agent Service
   participant C as CoordinatorAgent
   participant P as MonteCarloParameterAgent
   participant M as ScenarioMonteCarloAgent
@@ -127,7 +127,7 @@ flowchart LR
   B --> I[CSV download]
 ```
 
-The report workflow packages the current dataset, specialist findings, chart data, and action queue into exportable formats for review and sharing.
+The report workflow packages the current MAFY evidence, specialist findings, chart data, and action queue into exportable formats for review and sharing.
 
 ## LLM Boundaries
 

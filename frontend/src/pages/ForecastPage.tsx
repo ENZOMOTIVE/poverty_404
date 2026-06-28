@@ -81,7 +81,7 @@ export default function ForecastPage() {
         setError(
           caught instanceof Error
             ? caught.message
-            : "What-if forecast backend unavailable",
+            : "MAFY scenario agents unavailable",
         );
       });
 
@@ -103,7 +103,7 @@ export default function ForecastPage() {
     [
       "Mode",
       forecast?.rationale?.mode === "llm-assisted"
-        ? "LLM rationale"
+        ? "AI rationale"
         : "Monte Carlo",
     ],
   ];
@@ -111,21 +111,23 @@ export default function ForecastPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Monte Carlo what-if agents"
-        title="Scenario forecast"
-        description="A probabilistic planning view for stress-testing future risk pressure from historical workbook signals. It is intentionally separate from current operational actions."
+        kicker="MAFY scenario planning"
+        title="MAFY what-if scenario lab"
+        description="A probabilistic planning view for health teams to stress-test future follow-up pressure from historical MAFY workbook signals."
       >
         <div className="flex items-center gap-2 rounded-md border border-grid bg-panel px-3 py-2">
           <Gauge className="size-4 text-neon" aria-hidden="true" />
           <span className="text-xs font-semibold uppercase text-white">
-            {backendStatus === "live" ? "Forecast backend live" : "Backend required"}
+            {backendStatus === "live"
+              ? "MAFY forecast agents live"
+              : "MAFY agents required"}
           </span>
         </div>
       </PageHeader>
 
       <Panel
         title="Scenario controls"
-        subtitle="Changing a control reruns the forecast agent with the selected assumptions."
+        subtitle="Changing a control reruns the MAFY scenario agents with the selected assumptions."
       >
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
           <div className="grid gap-3 md:grid-cols-3">
@@ -197,7 +199,7 @@ export default function ForecastPage() {
       {status === "error" && (
         <Panel contentClassName="py-3">
           <p className="text-sm text-danger">
-            What-if forecast unavailable. {error}
+            MAFY scenario forecast unavailable. {error}
           </p>
         </Panel>
       )}
@@ -207,7 +209,7 @@ export default function ForecastPage() {
           <div className="flex items-center gap-3 text-muted">
             <Loader2 className="size-4 animate-spin" aria-hidden="true" />
             <p className="text-sm">
-              Running Monte Carlo what-if agents on workbook evidence.
+              Running MAFY scenario agents on workbook evidence.
             </p>
           </div>
         </Panel>
@@ -232,9 +234,17 @@ export default function ForecastPage() {
           </div>
 
           <Panel
-            title="Forecast read"
+            title="Scenario read"
             subtitle={forecast.scenario.description}
-            action={<StatusPill status={topArea?.projectedP90 && topArea.projectedP90 >= 0.7 ? "High" : "Medium"} />}
+            action={
+              <StatusPill
+                status={
+                  topArea?.projectedP90 && topArea.projectedP90 >= 0.7
+                    ? "High"
+                    : "Medium"
+                }
+              />
+            }
           >
             <p className="text-sm leading-6 text-ash">{forecast.summary}</p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -251,8 +261,8 @@ export default function ForecastPage() {
 
           {forecast.rationale && (
             <Panel
-              title="Agent rationale"
-              subtitle={`Mode: ${forecast.rationale.mode === "llm-assisted" ? "LLM-assisted" : "rules"}`}
+              title="MAFY rationale"
+              subtitle={`Mode: ${forecast.rationale.mode === "llm-assisted" ? "AI-assisted" : "dataset rules"}`}
             >
               <p className="text-sm leading-6 text-ash">
                 {forecast.rationale.summary}

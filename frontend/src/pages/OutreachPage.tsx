@@ -28,9 +28,9 @@ export default function OutreachPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Use case 1"
-        title="Outreach load per facility and area"
-        description="Session count, people reached, fokontany coverage, and outreach duration are combined into a site load score."
+        kicker="MAFY outreach coverage"
+        title="Outreach coverage and workload"
+        description="People reached, session activity, fokontany coverage, and outreach duration show where field teams may need support."
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

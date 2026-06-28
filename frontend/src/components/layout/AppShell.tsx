@@ -17,9 +17,11 @@ export default function AppShell() {
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-white">
-              Doctors for Madagascar
+              MAFY
             </p>
-            <p className="text-xs uppercase text-muted">MAFY Data Console</p>
+            <p className="text-xs uppercase text-muted">
+              Health Operations Console
+            </p>
           </div>
         </div>
 
@@ -47,7 +49,7 @@ export default function AppShell() {
         <div className="absolute inset-x-4 bottom-5 rounded-md border border-grid bg-panel/80 p-4">
           <div className="flex items-center justify-between gap-3">
             <span className="text-xs font-semibold uppercase text-muted">
-              Dataset
+              MAFY workbook
             </span>
             <StatusPill status={backendStatus === "live" ? "Live" : "Stable"} />
           </div>
@@ -75,7 +77,9 @@ export default function AppShell() {
         <header className="sticky top-0 z-20 border-b border-grid/70 bg-ink/88 backdrop-blur">
           <div className="flex min-h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
             <div className="min-w-0">
-              <p className="text-xs uppercase text-muted">Monitoring terminal</p>
+              <p className="text-xs uppercase text-muted">
+                MAFY live operations
+              </p>
               <p className="truncate text-sm font-semibold text-white">
                 {formatNumber(summary.participants)} participants across{" "}
                 {summary.sites} sites
@@ -84,7 +88,7 @@ export default function AppShell() {
             <div className="hidden items-center gap-2 rounded-md border border-grid bg-panel px-3 py-2 text-xs font-semibold uppercase text-muted md:flex">
               <DatabaseZap className="size-4 text-neon" aria-hidden="true" />
               <span>
-                {backendStatus === "live" ? "Live dataset" : "Cached dataset"}
+                {backendStatus === "live" ? "MAFY data live" : "Cached MAFY data"}
               </span>
             </div>
           </div>

@@ -1,119 +1,119 @@
-# MAFY Data Console
+# MAFY Health Operations Console
 
-An AI-supported monitoring and evaluation console for Doctors for Madagascar. The project turns an anonymized MAFY sensitisation workbook into operational insight: outreach load, referral signals, data quality issues, follow-up actions, downloadable reports, and Monte Carlo what-if forecasts.
+MAFY is an AI-supported health operations console for AI4Good-style programme work in Madagascar. It turns an anonymized MAFY sensitisation workbook into practical guidance for outreach review, referral follow-up, data confidence, scenario planning, and shareable reporting.
 
-Built for an AI4Good Hackathon context, the goal is practical: help project, field, and M&E teams understand where attention is needed without pretending the dataset is clinical diagnosis data.
+The product is built around one principle: help field, programme, and M&E teams act on workbook evidence without pretending the dataset is clinical diagnosis data.
 
-## Why It Matters
+## Why MAFY Matters
 
-Doctors for Madagascar works with monitoring and evaluation data that can support project steering, reporting, quality improvement, research, and internal learning. Raw exports are useful, but reviewing them manually is slow and requires both technical skill and field context.
+Health organisations often hold valuable outreach and monitoring data in spreadsheets, but turning those rows into field decisions can be slow. MAFY gives teams a clear way to answer:
 
-This console helps teams move from spreadsheet rows to action:
+- Where did outreach reach the most people?
+- Where do referral signals or referral gaps need review?
+- Which areas combine workload, risk signals, and weak data confidence?
+- What actions should field, M&E, and data teams review next?
+- What may happen under a clearly labelled probabilistic planning scenario?
 
-- Which communes or sites had the most outreach activity?
-- Where are referrals recorded, and where might referral recording need review?
-- Which areas combine outreach pressure, risk signals, and data quality issues?
-- What follow-up actions should field, M&E, and data teams review next?
-- What could happen under a clearly labelled probabilistic what-if scenario?
+## Who MAFY Supports
 
-## Product Snapshot
-
-| Layer | What it does |
+| Audience | How MAFY Helps |
 | --- | --- |
-| Frontend | Multi-page React console with charts, operations views, report downloads, what-if forecasting, and a one-time 3D Madagascar landing screen. |
-| Backend | Bun API that loads the workbook, anonymizes sensitive fields, runs agent workflows, and returns structured operation/report/forecast payloads. |
-| Agents | Coordinator plus specialist agents for data quality, outreach, referrals, risk, follow-up operations, reporting, and Monte Carlo what-if forecasting. |
-| Dataset | `data/SENSIBILISATION_STAFFDFM_MAFY-2026-06-27.xlsx` |
+| Field coordinators | See which communes, sites, and activities may need follow-up first. |
+| Healthcare specialists | Review referral activity, barrier signals, and high-risk participant-group indicators without losing the operational context. |
+| M&E teams | Check coverage, data completeness, duplicate identifiers, GPS gaps, and confidence issues before reporting. |
+| Programme leads | Compare outreach pressure, referral demand, and scenario forecasts in one place. |
+| Partner organisations | Receive downloadable evidence packages for review, coordination, and presentation. |
 
-## Architecture
+## What MAFY Provides
+
+| Capability | Value For Health Teams |
+| --- | --- |
+| Outreach visibility | Shows people reached, session activity, location mix, and field workload by site and area. |
+| Referral review | Highlights referral activity, referral rates, and areas where high outreach but zero referrals may need confirmation. |
+| Operational risk signals | Combines referral, barrier, participant-group, theme, and volume signals into area-level attention markers. |
+| Follow-up action planning | Converts workbook evidence into assignable actions with owners, due windows, evidence, blockers, and rationale. |
+| Scenario planning | Runs Monte Carlo what-if forecasts so teams can discuss possible future pressure under selected planning assumptions. |
+| Data confidence checks | Flags missing GPS, duplicate identifiers, and completeness issues that can weaken interpretation. |
+| Report package | Produces downloadable HTML, JSON, and CSV reports with charts, summaries, actions, and evidence tables. |
+| Madagascar-first experience | Opens with a one-time 3D globe focused on Madagascar, then moves directly into the MAFY operations workspace. |
+
+## How It Works
 
 ```mermaid
 flowchart LR
-  A[MAFY workbook] --> B[Workbook loader]
-  B --> C[Anonymization layer]
-  C --> D[CoordinatorAgent]
+  A[MAFY workbook] --> B[Workbook loading]
+  B --> C[Anonymization and minimization]
+  C --> D[MAFY coordinator]
 
-  D --> E[DataQualityAgent]
-  D --> F[OutreachAgent]
-  D --> G[ReferralAgent]
-  D --> H[RiskAgent]
-  D --> I[FollowUpOperationsAgent]
-  D --> J[WhatIfForecastAgent]
-  D --> K[ReportAgent]
+  D --> E[Data confidence review]
+  D --> F[Outreach review]
+  D --> G[Referral review]
+  D --> H[Risk signal review]
+  D --> I[Follow-up action planning]
+  D --> J[What-if scenario planning]
+  D --> K[Report preparation]
 
-  I --> I1[OperationsTriageAgent]
-  I --> I2[OperationsRationaleAgent]
+  I --> L[Action queue]
+  J --> M[Forecast trajectories]
+  K --> N[Downloadable reports]
 
-  J --> J1[MonteCarloParameterAgent]
-  J --> J2[ScenarioMonteCarloAgent]
-  J --> J3[ForecastRationaleAgent]
-
-  D --> L[Bun API]
-  L --> M[React console]
-  M --> N[Charts, action queues, reports, forecast race]
+  L --> O[MAFY Health Operations Console]
+  M --> O
+  N --> O
 ```
 
-For a focused agentic infrastructure view, see [`docs/AGENTIC_INFRASTRUCTURE.md`](docs/AGENTIC_INFRASTRUCTURE.md).
+For the agent architecture, see [`docs/AGENTIC_INFRASTRUCTURE.md`](docs/AGENTIC_INFRASTRUCTURE.md).
 
-## Current Capabilities
-
-| Capability | Description |
-| --- | --- |
-| Dataset summary | Live workbook metrics for participants, referrals, regions, sites, months, GPS gaps, and duplicate UID signals. |
-| Operations actions | Assignable follow-up actions with owners, due windows, evidence, blockers, and optional rationale. |
-| What-if forecasting | Seeded Monte Carlo scenario forecasts with animated trajectory and risk-pressure race views. |
-| Report generation | Downloadable HTML, JSON, and CSV reports generated from backend report payloads. |
-| Anonymization | Removes or minimizes direct identifiers before LLM-facing payloads or external export. |
-| Landing experience | One-time Three.js globe focused on Madagascar, then the user enters the monitoring console. |
-
-## Frontend Views
+## MAFY Workspace
 
 | View | Purpose |
 | --- | --- |
-| Overview | High-level reach, referral, quality, monthly activity, and priority score summary. |
-| Outreach | Outreach load and geographic activity patterns. |
-| Referrals | Referral score, referral rate, and referral gap signals. |
-| Risk | Operational risk intensity by area. |
-| Operations | Current backend-generated follow-up actions and rationale. |
-| What-if | Monte Carlo scenario forecasts and animated pressure race. |
-| Reports | Agent-generated downloadable HTML, JSON, and CSV reports. |
-| Quality | Data issues that affect interpretation and follow-up reliability. |
-| Scores | Score components and weighting logic. |
+| Overview | Current reach, referral, quality, monthly activity, and priority summary. |
+| Outreach | Outreach coverage, workload, and activity distribution. |
+| Referrals | Referral follow-up signals and possible recording gaps. |
+| Risk | Operational risk markers by site and commune. |
+| Operations | Current follow-up actions, owners, blockers, and explainable rationale. |
+| What-if | Monte Carlo planning forecasts with animated trajectory movement. |
+| Reports | Shareable HTML, JSON, and CSV report downloads. |
+| Quality | Data confidence issues that affect interpretation and follow-up reliability. |
+| Scores | Transparent score components behind MAFY prioritisation. |
 
 ## Agentic Workflows
 
-The backend runs deterministic dataset scoring for operational actions. If `OPENAI_API_KEY` is configured, LLM assistance is used for narrative rationale and report language from anonymized aggregate payloads.
+MAFY uses a coordinator and specialist agents for dataset review, follow-up planning, scenario forecasting, and report generation. Deterministic scoring remains grounded in the workbook. When `OPENAI_API_KEY` is configured, OpenAI is used for narrative support from anonymized aggregate payloads.
 
-| Workflow | Endpoint | Output |
+| Workflow | API Surface | Outcome |
 | --- | --- | --- |
-| Dataset summary | `GET /api/dataset/summary` | Workbook metrics and chart data. |
-| Follow-up operations | `POST /api/operations/follow-up` | Field-ready actions with evidence and rationale. |
-| What-if forecast | `POST /api/forecast/what-if` | Monte Carlo trajectories, race frames, and scenario explanation. |
-| Detailed report | `POST /api/reports/detailed` | Structured report payload for HTML, JSON, and CSV downloads. |
-| Full agent run | `POST /api/agents/run` | Coordinator-run specialist outputs. |
+| Workbook summary | `GET /api/dataset/summary` | Metrics and chart-ready data for the MAFY workspace. |
+| Follow-up operations | `POST /api/operations/follow-up` | Field-ready actions with evidence, owners, blockers, and rationale. |
+| What-if planning | `POST /api/forecast/what-if` | Monte Carlo trajectories, movement frames, and scenario explanation. |
+| Report package | `POST /api/reports/detailed` | Structured report payload for HTML, JSON, and CSV downloads. |
+| Full agent review | `POST /api/agents/run` | Coordinator-run specialist outputs for deeper inspection. |
 
 ## Responsible AI Boundaries
 
-This project does not make clinical diagnoses, patient-level triage decisions, or claims about confirmed disease burden.
+MAFY is an M&E and operations assistant, not a clinical decision system.
 
-The workbook does not contain patient-level facility visits, consultation timestamps, lab results, confirmed diagnoses, or health outcomes. The console therefore focuses on monitoring, operational prioritisation, data quality, scenario planning, and reporting support.
+- It does not diagnose patients.
+- It does not infer confirmed disease burden.
+- It does not replace local field review.
+- It does not claim that Monte Carlo outcomes will happen.
+- It supports prioritisation, explanation, data quality review, planning, and reporting.
 
-Monte Carlo what-if outputs are labelled as probabilistic planning aids. They are not guarantees and should be reviewed alongside field context.
+The workbook does not contain patient-level facility visits, consultation timestamps, lab results, confirmed diagnoses, or health outcomes. MAFY therefore focuses on operational monitoring and planning support.
 
-## Project Structure
+## Implementation Snapshot
 
-```text
-backend/                 Bun API and agent workflows
-data/                    Source workbook and generated anonymized outputs
-docs/                    Architecture and operations documentation
-frontend/                React/Vite/Tailwind console
-FOUR_DATA_USECASES.md    Dataset-grounded scoring use cases
-README.md                Hackathon-facing project overview
-```
+| Layer | Role |
+| --- | --- |
+| `frontend/` | React, Vite, Tailwind CSS, Recharts, lucide-react, and Three.js MAFY workspace. |
+| `backend/` | Bun service that loads the workbook, anonymizes sensitive fields, runs agent workflows, and serves structured payloads. |
+| `data/` | Source workbook and generated anonymized outputs. |
+| `docs/` | Architecture and operations documentation. |
 
 ## Getting Started
 
-Install and run the backend:
+Install and run the MAFY agent service:
 
 ```bash
 cd backend
@@ -121,7 +121,7 @@ bun install
 bun run dev
 ```
 
-Install and run the frontend:
+Install and run the MAFY workspace:
 
 ```bash
 cd frontend
@@ -132,11 +132,11 @@ npm run dev
 Default local URLs:
 
 ```text
-Frontend: http://127.0.0.1:5173
-Backend:  http://127.0.0.1:8787
+Workspace:     http://127.0.0.1:5173
+Agent Service: http://127.0.0.1:8787
 ```
 
-Optional backend environment:
+Local environment:
 
 ```text
 PORT=8787
@@ -146,9 +146,9 @@ OPENAI_API_KEY=your_key_here
 OPENAI_MODEL=gpt-4.1-mini
 ```
 
-## Validation
+Keep real keys in `backend/.env`. Do not commit secrets to `.env.example`.
 
-Useful checks:
+## Validation
 
 ```bash
 cd backend && bun run typecheck
@@ -158,8 +158,8 @@ cd frontend && npm run build
 
 ## Documentation
 
-- [`docs/AGENTIC_INFRASTRUCTURE.md`](docs/AGENTIC_INFRASTRUCTURE.md): agent architecture, workflows, and Mermaid diagrams.
-- [`docs/OPERATIONS_OVERVIEW.md`](docs/OPERATIONS_OVERVIEW.md): brief operations workflow overview.
+- [`docs/AGENTIC_INFRASTRUCTURE.md`](docs/AGENTIC_INFRASTRUCTURE.md): MAFY agent architecture, workflows, and diagrams.
+- [`docs/OPERATIONS_OVERVIEW.md`](docs/OPERATIONS_OVERVIEW.md): brief workflow overview for the product.
 - [`FOUR_DATA_USECASES.md`](FOUR_DATA_USECASES.md): dataset-grounded scoring and use-case definitions.
-- [`backend/README.md`](backend/README.md): backend commands, API routes, and anonymization notes.
-- [`frontend/README.md`](frontend/README.md): frontend structure, commands, and integration notes.
+- [`backend/README.md`](backend/README.md): service commands, API routes, and anonymization notes.
+- [`frontend/README.md`](frontend/README.md): workspace structure, commands, and integration notes.

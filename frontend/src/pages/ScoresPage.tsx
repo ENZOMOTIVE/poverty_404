@@ -12,9 +12,9 @@ export default function ScoresPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Score engine"
-        title="Formula outputs"
-        description="A compact view of the four documented scores across site and commune levels."
+        kicker="MAFY scoring transparency"
+        title="How MAFY prioritises follow-up"
+        description="A compact view of outreach, referral, risk, and follow-up scores used to support health-team review."
       >
         <div className="grid size-11 place-items-center rounded-md border border-neon/40 bg-neon/10 text-neon">
           <BarChart3 className="size-5" aria-hidden="true" />
@@ -22,8 +22,8 @@ export default function ScoresPage() {
       </PageHeader>
 
       <Panel
-        title="Site matrix"
-        subtitle="Outreach, referral, risk, and follow-up scores by site."
+        title="Priority score matrix"
+        subtitle="Outreach, referral, risk, and follow-up signals by site."
       >
         <div className="overflow-x-auto thin-scrollbar">
           <table className="w-full min-w-[840px] text-left text-sm">
@@ -89,8 +89,8 @@ export default function ScoresPage() {
       </Panel>
 
       <Panel
-        title="Commune ranking"
-        subtitle="Sorted by follow-up priority score."
+        title="Commune priority ranking"
+        subtitle="Areas sorted by follow-up priority for health-team review."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {communeMetrics.map((commune) => (

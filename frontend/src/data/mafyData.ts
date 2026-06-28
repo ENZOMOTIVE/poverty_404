@@ -384,10 +384,10 @@ export const qualitySignals: QualitySignal[] = [
     description: "Region, commune, date, and participant totals are populated.",
   },
   {
-    label: "Narrative fields",
+    label: "Observation notes",
     count: 71,
     severity: "Medium",
-    description: "Questions, observations, and challenges exist on all rows.",
+    description: "Questions, observations, and challenge notes exist on all rows.",
   },
 ];
 

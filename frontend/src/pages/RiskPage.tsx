@@ -25,9 +25,9 @@ export default function RiskPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Use case 3"
-        title="Operational risk intensity"
-        description="Referral activity, high-risk participant groups, barrier signals, theme signals, and participant volume classify area intensity."
+        kicker="MAFY risk review"
+        title="Operational risk signals"
+        description="Referral activity, high-risk participant groups, barriers, themes, and outreach volume show areas needing programme attention."
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -48,7 +48,7 @@ export default function RiskPage() {
         <MetricCard
           label="Barrier signals"
           value={barrierSignals.toString()}
-          detail="Narrative access, cost, or difficulty signal count"
+          detail="Access, cost, or difficulty signal count"
           icon={ShieldAlert}
           accent="cyan"
         />

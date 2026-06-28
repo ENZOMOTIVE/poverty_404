@@ -24,9 +24,9 @@ export default function ReferralsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Use case 2"
-        title="Referral score and gap detection"
-        description="Referral activity, referral rate, barrier signals, and participant volume expose where follow-up demand may arrive."
+        kicker="MAFY referral review"
+        title="Referral follow-up signals"
+        description="Referral activity, referral rate, barriers, and participant volume show where health teams may need to confirm follow-up."
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -60,7 +60,7 @@ export default function ReferralsPage() {
         <MetricCard
           label="Barrier signal"
           value="1"
-          detail="Narrative barrier signal detected in Manambaro"
+          detail="Access or difficulty signal detected in Manambaro"
           icon={Radio}
           accent="cyan"
         />
@@ -68,8 +68,8 @@ export default function ReferralsPage() {
 
       <div className="grid gap-6 xl:grid-cols-12">
         <Panel
-          title="Referral market map"
-          subtitle="Participant volume against referrals; point size follows queue priority."
+          title="Referral activity map"
+          subtitle="Participant volume against referrals; point size follows follow-up priority."
           className="xl:col-span-7"
         >
           <ReferralScatterChart data={communeMetrics} />
@@ -89,7 +89,7 @@ export default function ReferralsPage() {
 
       <Panel
         title="Referral gap ledger"
-        subtitle="High outreach with zero referrals should be reviewed for recording or behavior gaps."
+        subtitle="High outreach with zero referrals should be reviewed for recording, context, or follow-up gaps."
       >
         <div className="overflow-x-auto thin-scrollbar">
           <table className="w-full min-w-[720px] text-left text-sm">

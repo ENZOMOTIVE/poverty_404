@@ -45,13 +45,13 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <PageHeader
         kicker="MAFY monitoring"
-        title="Sensitisation operations console"
-        description="Outreach concentration, referral momentum, operational risk, and follow-up priority from the current MAFY sensitisation export."
+        title="MAFY Health Operations Console"
+        description="A live operations view for outreach coverage, referral follow-up, data quality, and area-level attention across the current MAFY sensitisation workbook."
       >
         <div className="flex items-center gap-2 rounded-md border border-grid bg-panel px-3 py-2">
           <span className="size-2 rounded-full bg-neon shadow-neon" />
           <span className="text-xs font-semibold uppercase text-white">
-            {backendStatus === "live" ? "Backend live" : "Cached workbook"}
+            {backendStatus === "live" ? "MAFY data live" : "Cached MAFY data"}
           </span>
         </div>
       </PageHeader>
@@ -59,7 +59,7 @@ export default function DashboardPage() {
       {backendStatus === "offline" && (
         <Panel contentClassName="py-3">
           <p className="text-sm text-amber">
-            Backend unavailable, using cached workbook fixtures. {error}
+            MAFY agent service unavailable, using cached workbook fixtures. {error}
           </p>
         </Panel>
       )}
@@ -114,15 +114,15 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 xl:grid-cols-12">
         <Panel
-          title="Monthly activity exchange"
-          subtitle="Participants as volume, referrals as signal."
+          title="Monthly field activity"
+          subtitle="People reached and referrals recorded over time."
           className="xl:col-span-8"
         >
           <MonthlyActivityChart data={monthlyMetrics} />
         </Panel>
         <Panel
-          title="Follow-up depth"
-          subtitle="Top queue items by priority score."
+          title="Follow-up watchlist"
+          subtitle="Communes that may need health team review first."
           className="xl:col-span-4"
         >
           <div className="space-y-5">
@@ -155,15 +155,15 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 xl:grid-cols-12">
         <Panel
-          title="Site score board"
-          subtitle="Follow-up score synthesizes referral, risk, outreach, gaps, and quality."
+          title="Site priority board"
+          subtitle="Follow-up priority blends referrals, risk signals, outreach load, gaps, and data quality."
           className="xl:col-span-7"
         >
           <SiteScoreBars data={siteMetrics} scoreKey="followupPriorityScore" />
         </Panel>
         <Panel
-          title="Primary signals"
-          subtitle="Current operational read by site."
+          title="Health operations signals"
+          subtitle="Current MAFY read by site."
           className="xl:col-span-5"
         >
           <div className="space-y-4">

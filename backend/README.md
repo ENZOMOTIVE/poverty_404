@@ -1,6 +1,6 @@
-# MAFY Agent Backend
+# MAFY Agent Service
 
-Bun backend for the MAFY Data Console. It loads the sensitisation workbook, derives operational metrics, runs agent workflows, anonymizes sensitive data, and serves structured payloads to the frontend.
+Bun service for the MAFY Health Operations Console. It loads the sensitisation workbook, derives operational metrics, runs agent workflows, anonymizes sensitive data, and serves structured payloads to the MAFY workspace.
 
 ## Role In The System
 
@@ -11,10 +11,10 @@ flowchart LR
   C --> D[CoordinatorAgent]
   D --> E[Specialist agents]
   E --> F[JSON API responses]
-  F --> G[React console]
+  F --> G[MAFY Health Operations Console]
 ```
 
-The backend is designed to work without an LLM key. Deterministic scoring, action generation, anonymization, and Monte Carlo forecasting still run locally. When `OPENAI_API_KEY` is configured, the LLM improves narrative rationale and report language from anonymized aggregate payloads.
+The service is designed to work without an LLM key. Deterministic scoring, action generation, anonymization, and Monte Carlo forecasting still run locally. When `OPENAI_API_KEY` is configured, the LLM improves rationale and report language from anonymized aggregate payloads.
 
 ## Commands
 

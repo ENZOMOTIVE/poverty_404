@@ -79,9 +79,9 @@ export default function QueuePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Use case 4"
-        title="Follow-up queue"
-        description="Communes and activity clusters are ordered by current workbook evidence, with reasons and field actions attached by the backend operations agent."
+        kicker="MAFY action queue"
+        title="Follow-up action queue"
+        description="Communes and activity clusters are ordered by current MAFY evidence, with reasons and field actions prepared for programme review."
       />
 
       <Panel contentClassName="space-y-4">
@@ -118,7 +118,7 @@ export default function QueuePage() {
       {status === "error" && (
         <Panel contentClassName="py-3">
           <p className="text-sm text-danger">
-            Follow-up operations API unavailable. {error}
+            MAFY follow-up agents unavailable. {error}
           </p>
         </Panel>
       )}
@@ -127,7 +127,7 @@ export default function QueuePage() {
         <Panel>
           <div className="flex items-center gap-3 text-muted">
             <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-            <p className="text-sm">Loading current action queue.</p>
+            <p className="text-sm">Loading current MAFY action queue.</p>
           </div>
         </Panel>
       )}
@@ -140,8 +140,8 @@ export default function QueuePage() {
         </div>
 
         <Panel
-          title="Queue weighting"
-          subtitle="Follow-up score composition."
+          title="Follow-up weighting"
+          subtitle="How MAFY balances referral gaps, risk, workload, and data confidence."
           className="xl:col-span-4"
           action={<SlidersHorizontal className="size-4 text-neon" />}
         >

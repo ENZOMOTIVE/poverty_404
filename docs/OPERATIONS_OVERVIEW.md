@@ -1,8 +1,8 @@
-# Operations Workflow Overview
+# MAFY Operations Workflow Overview
 
-The MAFY Data Console treats the anonymized sensitisation workbook as the source of truth for operational monitoring. The frontend reads live backend endpoints when available and only falls back to cached workbook fixtures for summary views when the backend cannot be reached.
+MAFY treats the anonymized sensitisation workbook as the source of truth for operational monitoring. The workspace reads live agent-service endpoints when available and only falls back to cached workbook fixtures for summary views when the service cannot be reached.
 
-## What The Console Does
+## What MAFY Does
 
 | Area | Purpose |
 | --- | --- |
@@ -12,7 +12,7 @@ The MAFY Data Console treats the anonymized sensitisation workbook as the source
 | Reports | Generates downloadable HTML, JSON, and CSV reports. |
 | Quality | Highlights data issues that can weaken interpretation. |
 
-## Backend Operations
+## Agent Service Operations
 
 | Endpoint | Workflow |
 | --- | --- |
@@ -23,17 +23,17 @@ The MAFY Data Console treats the anonymized sensitisation workbook as the source
 
 ## AI Usage
 
-The backend uses deterministic dataset scoring for current operational actions. The What-if page is intentionally different: it uses seeded Monte Carlo simulation from historical workbook patterns to estimate probabilistic scenario movement.
+MAFY uses deterministic dataset scoring for current operational actions. The What-if page is intentionally different: it uses seeded Monte Carlo simulation from historical workbook patterns to estimate probabilistic scenario movement.
 
-When an OpenAI API key is configured, LLM assistance is used for narrative rationale and report language from anonymized aggregate payloads. The LLM does not receive raw identifiers or raw free-text workbook fields.
+When an OpenAI API key is configured, AI assistance is used for rationale and report language from anonymized aggregate payloads. The model does not receive raw identifiers or raw free-text workbook fields.
 
 ## Entry Screen
 
-The app includes a one-time Three.js landing screen with a globe oriented toward Madagascar. Pressing the start button stores a local browser flag so later visits open directly to the console.
+MAFY includes a one-time Three.js landing screen with a globe oriented toward Madagascar. Pressing the start button stores a local browser flag so later visits open directly to the workspace.
 
 ## Downloads
 
-The Reports page creates local downloads after the backend returns a completed report:
+The Reports page creates local downloads after the agent service returns a completed report:
 
 - HTML includes report text, tables, and SVG charts.
 - JSON contains the full report payload.
@@ -42,8 +42,8 @@ The Reports page creates local downloads after the backend returns a completed r
 ## Local URLs
 
 ```text
-Frontend: http://127.0.0.1:5173
-Backend:  http://127.0.0.1:8787
+Workspace:     http://127.0.0.1:5173
+Agent Service: http://127.0.0.1:8787
 ```
 
 ## Related Docs

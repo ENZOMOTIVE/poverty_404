@@ -34,9 +34,9 @@ export default function QualityPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Data quality"
-        title="Validation and review board"
-        description="The assistant can flag missing coordinates, duplicate identifiers, and key-field completeness before reporting or field follow-up."
+        kicker="MAFY data confidence"
+        title="Data quality review"
+        description="MAFY flags missing coordinates, duplicate identifiers, and completeness issues before reporting or field follow-up."
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -73,7 +73,7 @@ export default function QualityPage() {
       <div className="grid gap-6 xl:grid-cols-12">
         <Panel
           title="Quality signals"
-          subtitle="Counts extracted from the workbook structure."
+          subtitle="Signals extracted from the workbook before reporting or field follow-up."
           className="xl:col-span-7"
         >
           <div className="space-y-5">
