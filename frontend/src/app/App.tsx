@@ -4,6 +4,7 @@ import AppShell from "../components/layout/AppShell";
 
 const LandingGate = lazy(() => import("../components/landing/LandingGate"));
 const DashboardPage = lazy(() => import("../pages/DashboardPage"));
+const DataPage = lazy(() => import("../pages/DataPage"));
 const OutreachPage = lazy(() => import("../pages/OutreachPage"));
 const ReferralsPage = lazy(() => import("../pages/ReferralsPage"));
 const RiskPage = lazy(() => import("../pages/RiskPage"));
@@ -38,6 +39,7 @@ export default function App() {
         <Routes>
           <Route element={<AppShell />}>
             <Route index element={page(<DashboardPage />)} />
+            <Route path="data" element={page(<DataPage />)} />
             <Route path="outreach" element={page(<OutreachPage />)} />
             <Route path="referrals" element={page(<ReferralsPage />)} />
             <Route path="risk" element={page(<RiskPage />)} />

@@ -29,6 +29,7 @@ src/
 | --- | --- |
 | Landing | One-time Three.js globe view focused on Madagascar. |
 | Overview | Dataset health, activity, referral, and priority summary. |
+| Data | Upload XLSX, XLS, or CSV datasets and choose the active feed. |
 | Outreach | Outreach load and activity distribution. |
 | Referrals | Referral score, rate, and possible gaps. |
 | Risk | Operational risk intensity signals. |
@@ -67,11 +68,14 @@ Important routes used by the workspace:
 | MAFY area | Service route |
 | --- | --- |
 | Dashboard metrics | `GET /api/dataset/summary` |
+| Dataset input | `GET /api/datasets`, `POST /api/datasets/upload` |
 | Operations | `POST /api/operations/follow-up` |
 | What-if forecast | `POST /api/forecast/what-if` |
 | Reports | `POST /api/reports/detailed` |
 
-If the dataset summary endpoint is unavailable, summary pages fall back to cached workbook fixtures. Operations, What-if, and Reports require the MAFY agent service because they run active agent workflows.
+If the dataset summary endpoint is unavailable, summary pages fall back to cached workbook fixtures. Operations, What-if, Reports, and dataset upload require the MAFY agent service because they run active agent workflows or write dataset files.
+
+The active dataset id is stored in browser local storage as `mafy-active-dataset-id`.
 
 ## UX Notes
 

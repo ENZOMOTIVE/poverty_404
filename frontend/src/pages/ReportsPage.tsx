@@ -27,7 +27,7 @@ import { formatNumber } from "../utils/format";
 type ReportStatus = "idle" | "loading" | "ready" | "error";
 
 export default function ReportsPage() {
-  const { backendStatus } = useAnalytics();
+  const { backendStatus, datasetId } = useAnalytics();
   const [status, setStatus] = useState<ReportStatus>("idle");
   const [report, setReport] = useState<DetailedReport | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -85,7 +85,7 @@ export default function ReportsPage() {
       const response = await generateDetailedReport({
         limit: 12,
         includeRationale: true,
-      });
+      }, datasetId);
 
       setReport(response.report);
       setStatus("ready");

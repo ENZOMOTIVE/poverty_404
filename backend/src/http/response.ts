@@ -11,7 +11,7 @@ export function jsonResponse(
   if (config) {
     headers.set("Access-Control-Allow-Origin", config.corsOrigin);
     headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    headers.set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
   }
 
   return new Response(JSON.stringify(data, null, 2), {

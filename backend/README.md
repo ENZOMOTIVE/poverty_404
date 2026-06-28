@@ -45,6 +45,9 @@ Keep real keys in `backend/.env`. Do not commit secrets.
 | --- | --- | --- |
 | `GET` | `/health` | Service health and LLM availability. |
 | `GET` | `/api/agents` | Lists coordinator and specialist agents. |
+| `GET` | `/api/datasets` | Lists the bundled workbook and locally uploaded datasets. |
+| `POST` | `/api/datasets/upload` | Accepts `multipart/form-data` with a `file` field for XLSX, XLS, or CSV upload. |
+| `DELETE` | `/api/datasets/:id` | Deletes an uploaded dataset and its local source file. The bundled default dataset is protected. |
 | `GET` | `/api/dataset/summary` | Returns workbook summary, top sites, top communes, and monthly metrics. |
 | `GET` | `/api/dataset/anonymization-report` | Returns an anonymization coverage report. |
 | `GET` | `/api/dataset/anonymized` | Returns anonymized rows for review or external testing. |
@@ -52,6 +55,19 @@ Keep real keys in `backend/.env`. Do not commit secrets.
 | `POST` | `/api/operations/follow-up` | Runs current follow-up operations workflow. |
 | `POST` | `/api/forecast/what-if` | Runs Monte Carlo what-if forecast workflow. |
 | `POST` | `/api/reports/detailed` | Runs detailed report workflow for downloadable exports. |
+
+Dataset-aware routes accept either a `datasetId` query parameter for `GET`
+routes or a `datasetId` field in JSON bodies for `POST` routes. Omit it, or use
+`default`, to run against the bundled workbook.
+
+Uploaded datasets are stored in:
+
+```text
+data/uploads/
+```
+
+This local directory is ignored by git. For production, keep the `datasetId`
+contract and replace the storage backend with S3 plus a metadata database.
 
 ## Agent Operations
 

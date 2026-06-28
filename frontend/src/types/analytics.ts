@@ -23,6 +23,22 @@ export interface SourceSummary {
   duplicateUidRows: number;
 }
 
+export type DatasetStatus = "ready" | "error";
+
+export interface DatasetMetadata {
+  id: string;
+  name: string;
+  filename: string;
+  uploadedAt: string;
+  rows: number;
+  columns: number;
+  participants: number;
+  referrals: number;
+  status: DatasetStatus;
+  isDefault?: boolean;
+  error?: string;
+}
+
 export interface SiteMetric {
   id: string;
   name: string;

@@ -32,6 +32,7 @@ Health organisations often hold valuable outreach and monitoring data in spreads
 | Referral review | Highlights referral activity, referral rates, and areas where high outreach but zero referrals may need confirmation. |
 | Operational risk signals | Combines referral, barrier, participant-group, theme, and volume signals into area-level attention markers. |
 | Follow-up action planning | Converts workbook evidence into assignable actions with owners, due windows, evidence, blockers, and rationale. |
+| Dataset input | Lets users upload XLSX, XLS, or CSV exports and select the active data feed for all metrics and agents. |
 | Scenario planning | Runs Monte Carlo what-if forecasts so teams can discuss possible future pressure under selected planning assumptions. |
 | Data confidence checks | Flags missing GPS, duplicate identifiers, and completeness issues that can weaken interpretation. |
 | Report package | Produces downloadable HTML, JSON, and CSV reports with charts, summaries, actions, and evidence tables. |
@@ -69,6 +70,7 @@ For the agent architecture, see [`docs/AGENTIC_INFRASTRUCTURE.md`](docs/AGENTIC_
 | View | Purpose |
 | --- | --- |
 | Overview | Current reach, referral, quality, monthly activity, and priority summary. |
+| Data | Upload a raw dataset, review processing status, and choose the active feed. |
 | Outreach | Outreach coverage, workload, and activity distribution. |
 | Referrals | Referral follow-up signals and possible recording gaps. |
 | Risk | Operational risk markers by site and commune. |
@@ -85,6 +87,7 @@ MAFY uses a coordinator and specialist agents for dataset review, follow-up plan
 | Workflow | API Surface | Outcome |
 | --- | --- | --- |
 | Workbook summary | `GET /api/dataset/summary` | Metrics and chart-ready data for the MAFY workspace. |
+| Dataset registry | `GET /api/datasets`, `POST /api/datasets/upload`, `DELETE /api/datasets/:id` | Uploaded dataset management and feed selection. |
 | Follow-up operations | `POST /api/operations/follow-up` | Field-ready actions with evidence, owners, blockers, and rationale. |
 | What-if planning | `POST /api/forecast/what-if` | Monte Carlo trajectories, movement frames, and scenario explanation. |
 | Report package | `POST /api/reports/detailed` | Structured report payload for HTML, JSON, and CSV downloads. |
@@ -135,6 +138,11 @@ Default local URLs:
 Workspace:     http://127.0.0.1:5173
 Agent Service: http://127.0.0.1:8787
 ```
+
+Uploaded datasets are stored locally under `data/uploads/` and ignored by git.
+Production deployments should move raw files to object storage such as S3 and
+keep dataset metadata in a database while preserving the same `datasetId` API
+contract.
 
 Local environment:
 

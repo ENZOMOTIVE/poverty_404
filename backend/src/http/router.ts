@@ -1,9 +1,14 @@
 import type { EnvConfig } from "../config/env";
 import { CoordinatorAgent } from "../agents/coordinator-agent";
 import { anonymizeRecords } from "../services/anonymization";
+import {
+  deleteUploadedDataset,
+  listDatasets,
+  loadContextForDataset,
+  saveUploadedDataset,
+} from "../services/dataset-store";
 import { buildDetailedReport } from "../services/detailed-report";
 import { createLlmClient } from "../services/llm";
-import { loadAgentContext } from "../services/workbook";
 import type { AgentRequest } from "../types/domain";
 import { errorResponse, jsonResponse, optionsResponse } from "./response";
 
@@ -35,9 +40,25 @@ function validateAgentRequest(body: Partial<AgentRequest>): AgentRequest {
 
   return {
     operation: body.operation,
+    datasetId: body.datasetId,
     options: body.options,
     language: body.language ?? "en",
   };
+}
+
+async function readUploadFile(request: Request) {
+  const formData = await request.formData();
+  const file = formData.get("file");
+
+  if (!(file instanceof File)) {
+    throw new Error("Upload request must include a file field.");
+  }
+
+  return file;
+}
+
+function datasetIdFrom(url: URL, body?: Partial<AgentRequest>) {
+  return body?.datasetId ?? url.searchParams.get("datasetId") ?? undefined;
 }
 
 export async function route(request: Request, config: EnvConfig) {
@@ -73,8 +94,36 @@ export async function route(request: Request, config: EnvConfig) {
       );
     }
 
+    if (request.method === "GET" && url.pathname === "/api/datasets") {
+      return jsonResponse(
+        {
+          datasets: await listDatasets(config),
+        },
+        {},
+        config,
+      );
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/datasets/upload") {
+      const dataset = await saveUploadedDataset(await readUploadFile(request));
+
+      return jsonResponse({ dataset }, { status: 201 }, config);
+    }
+
+    if (request.method === "DELETE" && url.pathname.startsWith("/api/datasets/")) {
+      const datasetId = decodeURIComponent(
+        url.pathname.replace("/api/datasets/", ""),
+      );
+      const dataset = await deleteUploadedDataset(datasetId);
+
+      return jsonResponse({ dataset }, {}, config);
+    }
+
     if (request.method === "GET" && url.pathname === "/api/dataset/summary") {
-      const context = loadAgentContext(config.datasetPath);
+      const context = await loadContextForDataset(
+        config,
+        datasetIdFrom(url),
+      );
 
       return jsonResponse(
         {
@@ -92,14 +141,20 @@ export async function route(request: Request, config: EnvConfig) {
       request.method === "GET" &&
       url.pathname === "/api/dataset/anonymization-report"
     ) {
-      const context = loadAgentContext(config.datasetPath);
+      const context = await loadContextForDataset(
+        config,
+        datasetIdFrom(url),
+      );
       const { report } = anonymizeRecords(context.records);
 
       return jsonResponse({ report }, {}, config);
     }
 
     if (request.method === "GET" && url.pathname === "/api/dataset/anonymized") {
-      const context = loadAgentContext(config.datasetPath);
+      const context = await loadContextForDataset(
+        config,
+        datasetIdFrom(url),
+      );
       const { rows, report } = anonymizeRecords(context.records);
 
       return jsonResponse({ report, rows }, {}, config);
@@ -109,7 +164,7 @@ export async function route(request: Request, config: EnvConfig) {
       const body = validateAgentRequest(
         await readJson<Partial<AgentRequest>>(request),
       );
-      const context = loadAgentContext(config.datasetPath);
+      const context = await loadContextForDataset(config, body.datasetId);
       const output = await coordinator.run(context, body);
 
       return jsonResponse(output, {}, config);
@@ -117,9 +172,13 @@ export async function route(request: Request, config: EnvConfig) {
 
     if (request.method === "POST" && url.pathname === "/api/operations/follow-up") {
       const body = await readJson<Partial<AgentRequest>>(request);
-      const context = loadAgentContext(config.datasetPath);
+      const context = await loadContextForDataset(
+        config,
+        datasetIdFrom(url, body),
+      );
       const output = await coordinator.run(context, {
         operation: "follow-up-operations",
+        datasetId: body.datasetId,
         options: {
           limit: body.options?.limit ?? 12,
           includeRationale: body.options?.includeRationale ?? true,
@@ -132,9 +191,13 @@ export async function route(request: Request, config: EnvConfig) {
 
     if (request.method === "POST" && url.pathname === "/api/forecast/what-if") {
       const body = await readJson<Partial<AgentRequest>>(request);
-      const context = loadAgentContext(config.datasetPath);
+      const context = await loadContextForDataset(
+        config,
+        datasetIdFrom(url, body),
+      );
       const output = await coordinator.run(context, {
         operation: "what-if-forecast",
+        datasetId: body.datasetId,
         options: {
           limit: body.options?.limit ?? 6,
           includeRationale: body.options?.includeRationale ?? true,
@@ -150,9 +213,13 @@ export async function route(request: Request, config: EnvConfig) {
 
     if (request.method === "POST" && url.pathname === "/api/reports/detailed") {
       const body = await readJson<Partial<AgentRequest>>(request);
-      const context = loadAgentContext(config.datasetPath);
+      const context = await loadContextForDataset(
+        config,
+        datasetIdFrom(url, body),
+      );
       const output = await coordinator.run(context, {
         operation: "report",
+        datasetId: body.datasetId,
         options: {
           limit: body.options?.limit ?? 12,
           includeRationale: body.options?.includeRationale ?? true,

@@ -1,13 +1,25 @@
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   communeMetrics as fallbackCommuneMetrics,
   monthlyMetrics as fallbackMonthlyMetrics,
   siteMetrics as fallbackSiteMetrics,
   sourceSummary as fallbackSummary,
 } from "../data/mafyData";
-import { getDatasetSummary } from "../services/backendApi";
+import {
+  deleteDataset as deleteDatasetFile,
+  getDatasetSummary,
+  listDatasets,
+  uploadDataset as uploadDatasetFile,
+} from "../services/backendApi";
 import type {
   CommuneMetric,
+  DatasetMetadata,
   MonthlyMetric,
   SiteMetric,
   SourceSummary,
@@ -17,6 +29,8 @@ import {
   type AnalyticsContextValue,
   type BackendStatus,
 } from "./analyticsContext";
+
+const activeDatasetStorageKey = "mafy-active-dataset-id";
 
 function mapCommuneMetrics(
   values: AnalyticsContextValue["communeMetrics"],
@@ -40,6 +54,10 @@ function mapCommuneMetrics(
 }
 
 export function AnalyticsProvider({ children }: { children: ReactNode }) {
+  const [datasetId, setDatasetIdState] = useState(() => {
+    return window.localStorage.getItem(activeDatasetStorageKey) ?? "default";
+  });
+  const [datasets, setDatasets] = useState<DatasetMetadata[]>([]);
   const [summary, setSummary] = useState<SourceSummary>(fallbackSummary);
   const [siteMetrics, setSiteMetrics] =
     useState<SiteMetric[]>(fallbackSiteMetrics);
@@ -51,10 +69,67 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
     useState<BackendStatus>("loading");
   const [error, setError] = useState<string | null>(null);
 
+  const setDatasetId = useCallback((nextDatasetId: string) => {
+    setBackendStatus("loading");
+    setError(null);
+    setDatasetIdState(nextDatasetId);
+    window.localStorage.setItem(activeDatasetStorageKey, nextDatasetId);
+  }, []);
+
+  const refreshDatasets = useCallback(async () => {
+    const data = await listDatasets();
+
+    setDatasets(data.datasets);
+  }, []);
+
+  const uploadDataset = useCallback(
+    async (file: File) => {
+      const response = await uploadDatasetFile(file);
+
+      await refreshDatasets();
+
+      if (response.dataset.status === "ready") {
+        setDatasetId(response.dataset.id);
+      }
+
+      return response.dataset;
+    },
+    [refreshDatasets, setDatasetId],
+  );
+
+  const deleteDataset = useCallback(
+    async (targetDatasetId: string) => {
+      const response = await deleteDatasetFile(targetDatasetId);
+
+      if (targetDatasetId === datasetId) {
+        setDatasetId("default");
+      }
+
+      await refreshDatasets();
+
+      return response.dataset;
+    },
+    [datasetId, refreshDatasets, setDatasetId],
+  );
+
   useEffect(() => {
     const controller = new AbortController();
 
-    getDatasetSummary(controller.signal)
+    listDatasets(controller.signal)
+      .then((data) => {
+        setDatasets(data.datasets);
+      })
+      .catch(() => {
+        setDatasets([]);
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    getDatasetSummary(datasetId, controller.signal)
       .then((data) => {
         setSummary(data.summary);
         setSiteMetrics(data.topSites);
@@ -71,7 +146,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
       });
 
     return () => controller.abort();
-  }, []);
+  }, [datasetId]);
 
   const value = useMemo(
     () => ({
@@ -81,8 +156,27 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
       monthlyMetrics,
       backendStatus,
       error,
+      datasetId,
+      datasets,
+      setDatasetId,
+      refreshDatasets,
+      uploadDataset,
+      deleteDataset,
     }),
-    [backendStatus, communeMetrics, error, monthlyMetrics, siteMetrics, summary],
+    [
+      backendStatus,
+      communeMetrics,
+      datasetId,
+      datasets,
+      deleteDataset,
+      error,
+      monthlyMetrics,
+      refreshDatasets,
+      setDatasetId,
+      siteMetrics,
+      summary,
+      uploadDataset,
+    ],
   );
 
   return (

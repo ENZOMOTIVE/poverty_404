@@ -1,6 +1,7 @@
 import { createContext, useContext } from "react";
 import type {
   CommuneMetric,
+  DatasetMetadata,
   MonthlyMetric,
   SiteMetric,
   SourceSummary,
@@ -15,6 +16,12 @@ export interface AnalyticsContextValue {
   monthlyMetrics: MonthlyMetric[];
   backendStatus: BackendStatus;
   error: string | null;
+  datasetId: string;
+  datasets: DatasetMetadata[];
+  setDatasetId: (datasetId: string) => void;
+  refreshDatasets: () => Promise<void>;
+  uploadDataset: (file: File) => Promise<DatasetMetadata>;
+  deleteDataset: (datasetId: string) => Promise<DatasetMetadata>;
 }
 
 export const AnalyticsContext =

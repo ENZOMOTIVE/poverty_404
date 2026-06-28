@@ -47,7 +47,7 @@ const scenarioOptions: Array<{
 const horizonOptions = [3, 6, 9];
 
 export default function ForecastPage() {
-  const { backendStatus } = useAnalytics();
+  const { backendStatus, datasetId } = useAnalytics();
   const [scenarioId, setScenarioId] =
     useState<WhatIfScenarioId>("followup-delay");
   const [horizonMonths, setHorizonMonths] = useState(6);
@@ -67,6 +67,7 @@ export default function ForecastPage() {
         limit: 6,
         includeRationale,
       },
+      datasetId,
       controller.signal,
     )
       .then((result) => {
@@ -86,7 +87,7 @@ export default function ForecastPage() {
       });
 
     return () => controller.abort();
-  }, [horizonMonths, includeRationale, scenarioId]);
+  }, [datasetId, horizonMonths, includeRationale, scenarioId]);
 
   function queueForecastRefresh() {
     setStatus("loading");

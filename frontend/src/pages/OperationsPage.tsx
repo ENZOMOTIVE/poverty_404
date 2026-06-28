@@ -33,7 +33,7 @@ function actionTone(priority: PriorityLevel) {
 }
 
 export default function OperationsPage() {
-  const { backendStatus } = useAnalytics();
+  const { backendStatus, datasetId } = useAnalytics();
   const [includeRationale, setIncludeRationale] = useState(true);
   const [operations, setOperations] =
     useState<FollowUpOperationsResult | null>(null);
@@ -52,6 +52,7 @@ export default function OperationsPage() {
         limit: 12,
         includeRationale,
       },
+      datasetId,
       controller.signal,
     )
       .then((result) => {
@@ -72,7 +73,7 @@ export default function OperationsPage() {
       });
 
     return () => controller.abort();
-  }, [includeRationale]);
+  }, [datasetId, includeRationale]);
 
   const actions = useMemo(() => operations?.actions ?? [], [operations]);
   const filteredActions = useMemo(() => {

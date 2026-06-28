@@ -4,6 +4,7 @@ import PageHeader from "../components/ui/PageHeader";
 import Panel from "../components/ui/Panel";
 import ScoreBar from "../components/ui/ScoreBar";
 import StatusPill from "../components/ui/StatusPill";
+import { useAnalytics } from "../providers/analyticsContext";
 import { runFollowUpOperations } from "../services/backendApi";
 import type {
   FollowUpAction,
@@ -24,6 +25,7 @@ const weights = [
 ];
 
 export default function QueuePage() {
+  const { datasetId } = useAnalytics();
   const [filter, setFilter] = useState<QueueFilter>("All");
   const [query, setQuery] = useState("");
   const [operations, setOperations] =
@@ -38,6 +40,7 @@ export default function QueuePage() {
 
     runFollowUpOperations(
       { limit: 12, includeRationale: false },
+      datasetId,
       controller.signal,
     )
       .then((result) => {
@@ -57,7 +60,7 @@ export default function QueuePage() {
       });
 
     return () => controller.abort();
-  }, []);
+  }, [datasetId]);
 
   const actions = useMemo(() => operations?.actions ?? [], [operations]);
   const filteredItems = useMemo(() => {

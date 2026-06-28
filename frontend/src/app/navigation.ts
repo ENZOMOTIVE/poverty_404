@@ -1,6 +1,7 @@
 import {
   Activity,
   BarChart3,
+  DatabaseZap,
   FileDown,
   Gauge,
   GitPullRequestArrow,
@@ -15,6 +16,11 @@ export const navigationItems = [
     label: "Overview",
     path: "/",
     icon: Activity,
+  },
+  {
+    label: "Data",
+    path: "/data",
+    icon: DatabaseZap,
   },
   {
     label: "Outreach",

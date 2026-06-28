@@ -58,6 +58,22 @@ export interface DatasetSummary {
   duplicateUidRows: number;
 }
 
+export type DatasetStatus = "ready" | "error";
+
+export interface DatasetMetadata {
+  id: string;
+  name: string;
+  filename: string;
+  uploadedAt: string;
+  rows: number;
+  columns: number;
+  participants: number;
+  referrals: number;
+  status: DatasetStatus;
+  isDefault?: boolean;
+  error?: string;
+}
+
 export interface AreaMetric {
   id: string;
   name: string;
@@ -230,6 +246,7 @@ export interface WhatIfForecastResult {
 
 export interface AgentRequest {
   operation: AgentOperation;
+  datasetId?: string | undefined;
   options?: {
     limit?: number;
     includeRationale?: boolean;
