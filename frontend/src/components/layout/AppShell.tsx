@@ -1,8 +1,11 @@
-import { DatabaseZap, Download, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { DatabaseZap, Download, Loader2, Map, X } from "lucide-react";
+import { lazy, Suspense, useCallback, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { navigationItems } from "../../app/navigation";
-import { useAnalytics } from "../../providers/analyticsContext";
+import {
+  useAnalytics,
+  type GeoFilter,
+} from "../../providers/analyticsContext";
 import { generateDetailedReport } from "../../services/backendApi";
 import {
   buildDetailedReportPdf,
@@ -12,11 +15,37 @@ import {
 import { cn, formatNumber, formatPercent } from "../../utils/format";
 import StatusPill from "../ui/StatusPill";
 
+const MapView = lazy(() => import("../map/MapView"));
+
 export default function AppShell() {
-  const { summary, backendStatus, datasetId } = useAnalytics();
+  const {
+    summary,
+    backendStatus,
+    datasetId,
+    allSiteMetrics,
+    geoFilter,
+    setGeoFilter,
+  } = useAnalytics();
+  const [showMap, setShowMap] = useState(false);
   const [pdfStatus, setPdfStatus] = useState<"idle" | "loading" | "error">(
     "idle",
   );
+
+  const handleMapSelect = useCallback(
+    (filter: GeoFilter) => {
+      setGeoFilter(filter);
+      setShowMap(false);
+    },
+    [setGeoFilter],
+  );
+
+  const handleMapClose = useCallback(() => {
+    setShowMap(false);
+  }, []);
+
+  const handleClearFilter = useCallback(() => {
+    setGeoFilter(null);
+  }, [setGeoFilter]);
 
   async function downloadPdfReport() {
     setPdfStatus("loading");
@@ -31,7 +60,10 @@ export default function AppShell() {
       );
       const report = response.report;
 
-      downloadBlobFile(reportFilename(report, "pdf"), buildDetailedReportPdf(report));
+      downloadBlobFile(
+        reportFilename(report, "pdf"),
+        buildDetailedReportPdf(report),
+      );
       setPdfStatus("idle");
     } catch {
       setPdfStatus("error");
@@ -46,9 +78,7 @@ export default function AppShell() {
             <DatabaseZap className="size-5" aria-hidden="true" />
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-white">
-              MAFY
-            </p>
+            <p className="truncate text-sm font-semibold text-white">MAFY</p>
             <p className="text-xs uppercase text-muted">
               Health Operations Console
             </p>
@@ -83,9 +113,7 @@ export default function AppShell() {
             </span>
             <StatusPill status={backendStatus === "live" ? "Live" : "Stable"} />
           </div>
-          <p className="mt-3 truncate text-xs text-ash">
-            {summary.dataset}
-          </p>
+          <p className="mt-3 truncate text-xs text-ash">{summary.dataset}</p>
           <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
             <div>
               <p className="text-muted">Rows</p>
@@ -94,9 +122,7 @@ export default function AppShell() {
             <div>
               <p className="text-muted">Referral rate</p>
               <p className="mt-1 font-mono text-white">
-                {formatPercent(
-                  summary.referrals / summary.participants,
-                )}
+                {formatPercent(summary.referrals / summary.participants)}
               </p>
             </div>
           </div>
@@ -115,7 +141,32 @@ export default function AppShell() {
                 {summary.sites} sites
               </p>
             </div>
+
             <div className="flex shrink-0 items-center gap-2">
+              {geoFilter && (
+                <button
+                  type="button"
+                  onClick={handleClearFilter}
+                  className="hidden h-10 items-center gap-2 rounded-md border border-amber/40 bg-amber/10 px-3 text-xs font-semibold uppercase text-amber transition hover:bg-amber/20 md:inline-flex"
+                >
+                  <span className="max-w-36 truncate">
+                    Showing: {geoFilter.value}
+                  </span>
+                  <X className="size-3" aria-hidden="true" />
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setShowMap(true)}
+                className="inline-flex h-10 items-center gap-2 rounded-md border border-neon/40 bg-neon/10 px-3 text-xs font-semibold uppercase text-neon transition hover:bg-neon/20"
+              >
+                <Map className="size-4" aria-hidden="true" />
+                <span className="hidden md:inline">
+                  {geoFilter ? "Change map" : "Map"}
+                </span>
+              </button>
+
               {pdfStatus === "error" && (
                 <span className="hidden text-xs font-semibold uppercase text-danger sm:inline">
                   PDF failed
@@ -139,6 +190,7 @@ export default function AppShell() {
               </button>
             </div>
           </div>
+
           <nav className="flex gap-2 overflow-x-auto border-t border-grid/50 px-4 py-2 thin-scrollbar lg:hidden">
             {navigationItems.map((item) => (
               <NavLink
@@ -165,6 +217,22 @@ export default function AppShell() {
           <Outlet />
         </main>
       </div>
+
+      {showMap && (
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 z-50 grid place-items-center bg-ink">
+              <p className="text-sm text-muted">Loading map</p>
+            </div>
+          }
+        >
+          <MapView
+            siteMetrics={allSiteMetrics}
+            onSelect={handleMapSelect}
+            onClose={handleMapClose}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

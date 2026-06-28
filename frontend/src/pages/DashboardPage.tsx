@@ -221,10 +221,11 @@ export default function DashboardPage() {
             </div>
           </div>
           <p className="text-sm leading-6 text-ash">
-            {topSite?.name} combines all recorded referrals with the strongest
-            referral score. Ampanihy Ouest carries the largest outreach load but
-            has zero referrals, making referral recording the clearest next
-            review target.
+            {topSite?.name} holds the highest follow-up priority score
+            ({topSite ? Math.round(topSite.followupPriorityScore * 100) : 0}%)
+            with {topSite?.referrals ?? 0} referrals across{" "}
+            {topSite?.participants ?? 0} participants. Review referral recording
+            and outreach coverage for sites with zero referrals.
           </p>
         </div>
       </Panel>

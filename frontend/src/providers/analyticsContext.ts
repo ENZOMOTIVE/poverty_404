@@ -9,6 +9,11 @@ import type {
 
 export type BackendStatus = "loading" | "live" | "offline";
 
+export interface GeoFilter {
+  level: "region" | "district";
+  value: string;
+}
+
 export interface AnalyticsContextValue {
   summary: SourceSummary;
   siteMetrics: SiteMetric[];
@@ -18,6 +23,10 @@ export interface AnalyticsContextValue {
   error: string | null;
   datasetId: string;
   datasets: DatasetMetadata[];
+  allSiteMetrics: SiteMetric[];
+  allCommuneMetrics: CommuneMetric[];
+  geoFilter: GeoFilter | null;
+  setGeoFilter: (filter: GeoFilter | null) => void;
   setDatasetId: (datasetId: string) => void;
   refreshDatasets: () => Promise<void>;
   uploadDataset: (file: File) => Promise<DatasetMetadata>;
