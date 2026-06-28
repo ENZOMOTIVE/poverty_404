@@ -3,11 +3,10 @@ import "leaflet/dist/leaflet.css";
 import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { GeoFilter } from "../../providers/analyticsContext";
-import type { CommuneMetric, SiteMetric } from "../../types/analytics";
+import type { SiteMetric } from "../../types/analytics";
 
 interface MapViewProps {
   siteMetrics: SiteMetric[];
-  communeMetrics: CommuneMetric[];
   onSelect: (filter: GeoFilter) => void;
   onClose: () => void;
 }
@@ -27,7 +26,7 @@ const DOC_EMOJIS = ["\u{1F469}\u{1F3FB}‍⚕️", "\u{1F468}\u{1F3FE}‍⚕️"
 
 type ViewLevel = "district" | "region";
 
-export default function MapView({ siteMetrics, communeMetrics, onSelect, onClose }: MapViewProps) {
+export default function MapView({ siteMetrics, onSelect, onClose }: MapViewProps) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const [viewLevel, setViewLevel] = useState<ViewLevel>("district");
