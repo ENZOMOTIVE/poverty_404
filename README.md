@@ -1,12 +1,6 @@
 # MAFY Health Operations Console
 
-
-## Project Tags
-
-- `Agentic AI`
-- `Full Stack`
-
-zed MAFY sensitisation workbook into practical guidance for outreach review, referral follow-up, data confidence, scenario planning, and shareable reporting.
+MAFY is an AI-supported health operations console for AI4Good-style programme work in Madagascar. It turns an anonymized MAFY sensitisation workbook into practical guidance for outreach review, referral follow-up, data confidence, scenario planning, and shareable reporting.
 
 The product is built around one principle: help field, programme, and M&E teams act on workbook evidence without pretending the dataset is clinical diagnosis data.
 
@@ -176,3 +170,12 @@ cd frontend && npm run build
 - [`FOUR_DATA_USECASES.md`](FOUR_DATA_USECASES.md): dataset-grounded scoring and use-case definitions.
 - [`backend/README.md`](backend/README.md): service commands, API routes, and anonymization notes.
 - [`frontend/README.md`](frontend/README.md): workspace structure, commands, and integration notes.
+
+## Project Metadata
+
+| Field | Details |
+| --- | --- |
+| Repository | `ENZOMOTIVE/poverty_404` |
+| Categories | `Agentic AI`, `Full Stack` |
+| Primary stack | React, Vite, Node.js, TypeScript, JavaScript, HTML, CSS |
+
